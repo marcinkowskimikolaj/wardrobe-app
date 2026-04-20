@@ -1,0 +1,75 @@
+import { useState } from 'react'
+import { updateOutfit, deleteOutfit } from '../../services/supabase'
+
+export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onItemClick }) {
+  const [editingName, setEditingName] = useState(false)
+  const [name, setName] = useState(outfit.name ?? 'Outfit')
+
+  // Ubrania należące do tego outfitu
+  const items = (outfit.clothing_ids ?? [])
+    .map(id => clothes.find(c => c.id === id))
+    .filter(Boolean)
+
+  async function saveName() {
+    setEditingName(false)
+    if (name === outfit.name) return
+    try {
+      const updated = await updateOutfit(outfit.id, { name })
+      onUpdated(outfit.id, { name })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await deleteOutfit(outfit.id)
+      onDeleted(outfit.id)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  return (
+    <div className="outfit-card">
+      <div className="outfit-card-header">
+        {editingName ? (
+          <input
+            className="outfit-name-edit"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            onBlur={saveName}
+            onKeyDown={e => e.key === 'Enter' && saveName()}
+            autoFocus
+          />
+        ) : (
+          <button className="outfit-name-btn" onClick={() => setEditingName(true)}>
+            {name}
+            <span className="outfit-edit-icon">✎</span>
+          </button>
+        )}
+        <div className="outfit-card-meta">
+          <span className="outfit-owner">{outfit.owner}</span>
+          <button className="outfit-delete-btn" onClick={handleDelete}>✕</button>
+        </div>
+      </div>
+
+      {/* Poziomy pasek miniaturek */}
+      <div className="outfit-strip">
+        {items.length === 0 ? (
+          <p className="outfit-empty">Brak ubrań</p>
+        ) : (
+          items.map(item => (
+            <div key={item.id} className="outfit-thumb" onClick={() => onItemClick(item)}>
+              {item.photo_url ? (
+                <img src={item.photo_url} alt={item.category ?? ''} />
+              ) : (
+                <span>🧥</span>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(cat)",
+      "Bash(python3 /tmp/gen_icons.py)",
+      "Bash(npm run *)",
+      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"ALTER TABLE public.clothes DISABLE ROW LEVEL SECURITY; DROP POLICY IF EXISTS \\\\\"Zalogowani mają pełny dostęp\\\\\" ON public.clothes; DROP POLICY IF EXISTS \\\\\"Pełny dostęp\\\\\" ON public.clothes;\"}')",
+      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"SELECT relrowsecurity, relname FROM pg_class WHERE relname = '\\\\''clothes'\\\\'';\"}')",
+      "Bash(curl -s https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/storage/buckets -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e')",
+      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"CREATE POLICY \\\\\"Public upload\\\\\" ON storage.objects FOR INSERT TO authenticated WITH CHECK \\(bucket_id = '\\\\''clothes-photos'\\\\''\\); CREATE POLICY \\\\\"Public select\\\\\" ON storage.objects FOR SELECT TO authenticated USING \\(bucket_id = '\\\\''clothes-photos'\\\\''\\); CREATE POLICY \\\\\"Public delete\\\\\" ON storage.objects FOR DELETE TO authenticated USING \\(bucket_id = '\\\\''clothes-photos'\\\\''\\);\"}')",
+      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"ALTER TABLE public.clothes ADD COLUMN IF NOT EXISTS ai_confidence float, ADD COLUMN IF NOT EXISTS ai_model text, ADD COLUMN IF NOT EXISTS image_enhanced_url text, ADD COLUMN IF NOT EXISTS prompt_tags text[], ADD COLUMN IF NOT EXISTS embedding_ready boolean DEFAULT false;\"}')",
+      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"CREATE TABLE IF NOT EXISTS public.outfits \\(id uuid PRIMARY KEY DEFAULT gen_random_uuid\\(\\), created_at timestamptz DEFAULT now\\(\\), name text, owner text, clothing_ids uuid[], notes text\\); ALTER TABLE public.outfits DISABLE ROW LEVEL SECURITY;\"}')",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"ALTER TABLE public.clothes ADD COLUMN IF NOT EXISTS last_washed timestamptz;\"}')"
+    ]
+  }
+}
