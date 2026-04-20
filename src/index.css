@@ -2015,6 +2015,13 @@ textarea { resize: vertical; }
 }
 
 /* suggestions */
+.chat-weather-bar {
+  font-size: 0.75rem;
+  color: var(--text-2);
+  margin: 0 0 4px;
+  padding: 0;
+}
+
 .chat-suggestions {
   display: flex;
   flex-direction: column;

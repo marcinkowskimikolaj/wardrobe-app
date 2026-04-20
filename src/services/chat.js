@@ -1,7 +1,7 @@
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'
 
-export async function sendChatMessage(userMessage, clothes, history = []) {
+export async function sendChatMessage(userMessage, clothes, history = [], weatherContext = null) {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY
   if (!apiKey) throw new Error('Brak klucza VITE_GROQ_API_KEY')
 
@@ -26,7 +26,16 @@ rekomendasz co założyć na różne okazje.
 
 SZAFA UŻYTKOWNIKA (JSON):
 ${JSON.stringify(wardrobeContext)}
+${weatherContext ? `
+AKTUALNA POGODA:
+${weatherContext.summary}
+Temp odczuwalna: ${weatherContext.feels_like}°C
+Szansa deszczu: ${weatherContext.rain_chance}%
 
+Uwzględniaj pogodę w rekomendacjach — proponuj ubrania odpowiednie do aktualnych warunków.
+Przy wysokiej szansie deszczu sugeruj coś wodoodpornego.
+Przy niskiej temperaturze sugeruj warstwy.
+` : ''}
 Zasady odpowiedzi:
 - Zawsze po polsku
 - Odpowiedzi zwięzłe (max 3-4 zdania tekstu)

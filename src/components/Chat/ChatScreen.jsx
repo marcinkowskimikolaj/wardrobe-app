@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { sendChatMessage } from '../../services/chat'
+import { getWeatherContext } from '../../services/weather'
 
 const SUGGESTIONS = [
   'Co założyć na weekend?',
@@ -54,8 +55,13 @@ export default function ChatScreen({ clothes, onItemClick }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [weatherData, setWeatherData] = useState(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    getWeatherContext().then(setWeatherData)
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -72,7 +78,7 @@ export default function ChatScreen({ clothes, onItemClick }) {
     setLoading(true)
 
     try {
-      const reply = await sendChatMessage(trimmed, clothes, next)
+      const reply = await sendChatMessage(trimmed, clothes, next, weatherData)
       const assistantMsg = { role: 'assistant', content: reply.text, item_ids: reply.item_ids ?? [] }
       setMessages(prev => [...prev, assistantMsg].slice(-20))
     } catch {
@@ -96,6 +102,11 @@ export default function ChatScreen({ clothes, onItemClick }) {
       </div>
 
       <div className="chat-messages">
+        {weatherData && messages.length === 0 && (
+          <p className="chat-weather-bar">
+            📍 {weatherData.current_temp}°C · {weatherData.condition} · deszcz {weatherData.rain_chance}% · wiatr {weatherData.wind_kmh} km/h
+          </p>
+        )}
         {messages.length === 0 && (
           <div className="chat-suggestions">
             <p className="chat-suggestions-label">Zacznij od pytania:</p>
