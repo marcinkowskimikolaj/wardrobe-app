@@ -135,6 +135,7 @@ export default function ClothingDetail({ item, onClose, onUpdated, onDeleted, cl
             onSave={handleSaveEdit} saving={saving} error={saveError} />
         </div>
       ) : (
+        <>
         <div className="detail-content">
           {/* Zdjęcie kwadratowe */}
           <div className="detail-photo-wrap">
@@ -246,22 +247,23 @@ export default function ClothingDetail({ item, onClose, onUpdated, onDeleted, cl
               onClose={() => setShowOutfitPicker(false)}
             />
           )}
-
-          {/* Status pills przyklejone do dołu */}
-          <div className="detail-status-bar">
-            {STATUS_CYCLE.map(s => (
-              <button
-                key={s}
-                className={`status-pill ${currentItem.status === s ? 'active' : ''}`}
-                style={{ '--pill-color': STATUS_COLORS[s] }}
-                onClick={() => handleStatusChange(s)}
-                disabled={statusLoading}
-              >
-                {STATUS_LABELS[s]}
-              </button>
-            ))}
-          </div>
         </div>
+
+        {/* Status pills — poza scrollem, przyklejone do dołu ekranu */}
+        <div className="detail-status-bar">
+          {STATUS_CYCLE.map(s => (
+            <button
+              key={s}
+              className={`status-pill ${currentItem.status === s ? 'active' : ''}`}
+              style={{ '--pill-color': STATUS_COLORS[s] }}
+              onClick={() => handleStatusChange(s)}
+              disabled={statusLoading}
+            >
+              {STATUS_LABELS[s]}
+            </button>
+          ))}
+        </div>
+        </>
       )}
     </div>
   )

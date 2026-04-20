@@ -835,8 +835,9 @@ textarea { resize: vertical; }
 .detail-screen {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  height: 100dvh;
   background: var(--bg);
+  overflow: hidden;
 }
 .screen-content {
   flex: 1;
@@ -966,8 +967,10 @@ textarea { resize: vertical; }
 
 /* ─── DETAIL SCREEN ──────────────────────────────────────────────── */
 .detail-content {
-  padding-bottom: calc(100px + var(--safe-bottom));
+  flex: 1;
   overflow-y: auto;
+  padding-bottom: 1.5rem;
+  -webkit-overflow-scrolling: touch;
 }
 .detail-photo-wrap {
   position: relative;
@@ -1082,22 +1085,14 @@ textarea { resize: vertical; }
 .washing-val   { font-size: 0.88rem; font-weight: 600; color: var(--text); }
 .washing-lbl   { font-size: 0.72rem; color: var(--text-2); }
 
-/* Status bar pinned to bottom */
+/* Status bar — na dole flex column, bez position:fixed */
 .detail-status-bar {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 430px;
+  flex-shrink: 0;
   display: flex;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem calc(0.75rem + var(--safe-bottom));
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.97);
   border-top: 1px solid var(--border);
-  z-index: 30;
 }
 .status-pill {
   flex: 1;
@@ -1509,9 +1504,10 @@ textarea { resize: vertical; }
   position: fixed;
   inset: 0;
   background: var(--bg);
-  z-index: 40;
-  overflow-y: auto;
-  overflow-x: hidden;
+  z-index: 55;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .screen-slide-enter {
   animation: slideInRight var(--dur-m) var(--smooth) both;

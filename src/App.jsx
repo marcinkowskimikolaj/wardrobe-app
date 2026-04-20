@@ -45,7 +45,7 @@ export default function App() {
     }
   }
 
-  const showBottomNav = screen !== SCREENS.ADD
+  const showBottomNav = screen !== SCREENS.ADD && screen !== SCREENS.DETAIL && !exitingDetail
   const navScreen = screen === SCREENS.OUTFITS ? 'outfits'
     : screen === SCREENS.LAUNDRY ? 'laundry'
     : 'gallery'

@@ -14,7 +14,17 @@
       "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"ALTER TABLE public.clothes ADD COLUMN IF NOT EXISTS ai_confidence float, ADD COLUMN IF NOT EXISTS ai_model text, ADD COLUMN IF NOT EXISTS image_enhanced_url text, ADD COLUMN IF NOT EXISTS prompt_tags text[], ADD COLUMN IF NOT EXISTS embedding_ready boolean DEFAULT false;\"}')",
       "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"CREATE TABLE IF NOT EXISTS public.outfits \\(id uuid PRIMARY KEY DEFAULT gen_random_uuid\\(\\), created_at timestamptz DEFAULT now\\(\\), name text, owner text, clothing_ids uuid[], notes text\\); ALTER TABLE public.outfits DISABLE ROW LEVEL SECURITY;\"}')",
       "mcp__Claude_Preview__preview_start",
-      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"ALTER TABLE public.clothes ADD COLUMN IF NOT EXISTS last_washed timestamptz;\"}')"
+      "Bash(curl -s -X POST https://api.supabase.com/v1/projects/altitfgqnxnohiqdkmrq/database/query -H 'Authorization: Bearer sbp_288141eb6c693a6569c007a3602401f83d32883e' -H 'Content-Type: application/json' -d '{\"query\": \"ALTER TABLE public.clothes ADD COLUMN IF NOT EXISTS last_washed timestamptz;\"}')",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Bash(npx vercel *)",
+      "Read(//Users/mikolajmarcinkowski/.local/share/com.vercel.cli/**)",
+      "Read(//Users/mikolajmarcinkowski/.config/vercel/**)",
+      "Bash(cat ~/.local/share/com.vercel.cli/auth.json)",
+      "Bash(cat ~/.config/vercel/auth.json)",
+      "Bash(ls ~/.vercel/)",
+      "Bash(jobs)",
+      "Read(//Users/mikolajmarcinkowski/**)"
     ]
   }
 }
