@@ -30,7 +30,8 @@ ${JSON.stringify(wardrobeContext)}
 Zasady odpowiedzi:
 - Zawsze po polsku
 - Odpowiedzi zwięzłe (max 3-4 zdania tekstu)
-- Jeśli rekomenduje konkretne ubrania — zwróć ich ID w tablicy
+- W tekście nazywaj ubrania po kategorii i kolorze (np. "czarny płaszcz", "denimowa kurtka") — NIGDY nie podawaj ID w tekście
+- Jeśli rekomenduje konkretne ubrania — umieść ich ID wyłącznie w tablicy item_ids
 - Format odpowiedzi: JSON { "text": "odpowiedź", "item_ids": ["id1","id2"] }
 - Jeśli pytanie nie dotyczy ubrań — odpowiedz { "text": "Mogę pomóc tylko w temacie Twojej szafy 😊", "item_ids": [] }
 - item_ids: puste [] jeśli brak konkretnych rekomendacji
