@@ -35,6 +35,7 @@ export default defineConfig({
         apple_mobile_web_app_status_bar_style: 'black-translucent'
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Cache strategia: sieć najpierw dla API, cache dla assetów
         runtimeCaching: [
