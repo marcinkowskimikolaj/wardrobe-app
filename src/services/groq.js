@@ -60,7 +60,8 @@ Zwróć TYLKO JSON bez żadnego tekstu przed ani po:
   "pattern": "wzór tkaniny po polsku (jednolity/w kratę/w paski/w kwiaty/moro/geometryczny itp.)",
   "formality": "poziom formalności po polsku (bardzo casualowy/casualowy/smart casual/biznesowy/formalny)",
   "dominant_color": "jeden główny kolor po polsku",
-  "secondary_colors": ["kolory pomocnicze po polsku — pusta tablica jeśli brak"]
+  "secondary_colors": ["kolory pomocnicze po polsku — pusta tablica jeśli brak"],
+  "clothing_layer": "warstwa ubrania — JEDNA z wartości: spód / środek / wierzch / dół / całość / dodatek. Określ na podstawie: kurtka/płaszcz/kożuch → wierzch; sweter/bluza/kamizelka → środek; koszula/t-shirt/top/bielizna → spód; spodnie/spódnica/szorty/jeansy → dół; sukienka/kombinezon → całość; szalik/czapka/buty/pasek/torebka → dodatek"
 }
 Nierozpoznane pola: null.`
 

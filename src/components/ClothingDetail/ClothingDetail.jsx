@@ -22,6 +22,7 @@ function itemToFormData(item) {
     ironing: item.ironing ?? '',
     ai_description: item.ai_description ?? '',
     notes: item.notes ?? '',
+    clothing_layer: item.clothing_layer ?? '',
   }
 }
 
@@ -71,6 +72,7 @@ export default function ClothingDetail({ item, onClose, onUpdated, onDeleted, cl
         ironing: formData.ironing || null,
         notes: formData.notes || null,
         ai_description: formData.ai_description || null,
+        clothing_layer: formData.clothing_layer || null,
       }
       const updated = await updateClothing(currentItem.id, updates)
       setCurrentItem(updated)

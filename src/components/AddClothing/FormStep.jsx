@@ -1,4 +1,4 @@
-import { OWNERS, CATEGORIES, SEASONS, WASHING_MODES, DRYING_OPTIONS, IRONING_OPTIONS } from '../../config/constants'
+import { OWNERS, CATEGORIES, SEASONS, WASHING_MODES, DRYING_OPTIONS, IRONING_OPTIONS, CLOTHING_LAYERS } from '../../config/constants'
 
 // Tagi z możliwością usunięcia (pill + ×)
 function PillTagInput({ label, value = [], onChange, placeholder }) {
@@ -114,6 +114,9 @@ export default function FormStep({ formData, onChange, onSave, saving, error }) 
       <SingleSelect label="Kategoria" options={CATEGORIES}
         value={formData.category ?? ''} onChange={field('category')} />
 
+      <SingleSelect label="Warstwa *" options={CLOTHING_LAYERS}
+        value={formData.clothing_layer ?? ''} onChange={field('clothing_layer')} />
+
       <PillTagInput label="Kolory" value={formData.colors ?? []}
         onChange={field('colors')} placeholder="Wpisz kolor i Enter" />
 
@@ -164,7 +167,7 @@ export default function FormStep({ formData, onChange, onSave, saving, error }) 
       {error && <p className="error-msg">{error}</p>}
 
       <button className="btn-primary" onClick={onSave}
-        disabled={saving || !formData.owner} style={{ marginTop: '0.5rem', marginBottom: '2rem' }}>
+        disabled={saving || !formData.owner || !formData.clothing_layer} style={{ marginTop: '0.5rem', marginBottom: '2rem' }}>
         {saving ? 'Zapisuję...' : 'Zapisz ubranie'}
       </button>
     </div>

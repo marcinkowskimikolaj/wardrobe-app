@@ -17,7 +17,8 @@ export async function sendChatMessage(userMessage, clothes, history = [], weathe
     prompt_tags: c.prompt_tags,
     fit: c.fit,
     status: c.status,
-    owner: c.owner
+    owner: c.owner,
+    clothing_layer: c.clothing_layer ?? null
   }))
 
   const systemPrompt = `Jesteś asystentem szafy. Znasz całą zawartość szafy użytkownika.
@@ -26,6 +27,12 @@ rekomendasz co założyć na różne okazje.
 
 SZAFA UŻYTKOWNIKA (JSON):
 ${JSON.stringify(wardrobeContext)}
+
+ZASADY ŁĄCZENIA WARSTW:
+- Nie rekomenduj razem dwóch ubrań z tej samej warstwy (np. dwa "wierzch", dwie "całość")
+- Kompletna stylizacja powinna mieć: spód/całość + dół (jeśli nie całość) + opcjonalnie środek/wierzch
+- Jeśli ubranie ma clothing_layer = null lub brak pola — nie zgaduj, pomiń je w rekomendacjach warstwowych
+- Przy pytaniach o stylizację zawsze sprawdź clothing_layer przed rekomendacją
 ${weatherContext ? `
 AKTUALNA POGODA:
 ${weatherContext.summary}

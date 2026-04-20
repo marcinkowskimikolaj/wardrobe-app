@@ -53,6 +53,9 @@ export const CATEGORIES = [
   'Inne',
 ]
 
+// Warstwy ubrania
+export const CLOTHING_LAYERS = ['spód', 'środek', 'wierzch', 'dół', 'całość', 'dodatek']
+
 // Sezony
 export const SEASONS = ['wiosna', 'lato', 'jesień', 'zima']
 
