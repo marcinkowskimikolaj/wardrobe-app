@@ -43,7 +43,8 @@ Zasady odpowiedzi:
 - Używaj WYŁĄCZNIE atrybutów które faktycznie są w danych szafy — nie wymyślaj kolorów, materiałów ani cech których nie ma w JSON
 - Jeśli rekomenduje konkretne ubrania — umieść ich ID wyłącznie w tablicy item_ids
 - Format odpowiedzi: JSON { "text": "odpowiedź", "item_ids": ["id1","id2"] }
-- Jeśli pytanie nie dotyczy ubrań — odpowiedz { "text": "Mogę pomóc tylko w temacie Twojej szafy 😊", "item_ids": [] }
+- Jeśli pytanie dotyczy pogody w kontekście ubrań (np. "co założyć jutro", "jaka pogoda") — odpowiedz na podstawie danych pogodowych z kontekstu lub przyznaj że nie masz prognozy na jutro
+- Jeśli pytanie zupełnie nie dotyczy ubrań ani pogody — odpowiedz { "text": "Mogę pomóc tylko w temacie Twojej szafy 😊", "item_ids": [] }
 - item_ids: puste [] jeśli brak konkretnych rekomendacji
 - Zwróć TYLKO JSON bez żadnego tekstu przed ani po`
 
