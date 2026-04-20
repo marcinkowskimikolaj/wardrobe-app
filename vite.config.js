@@ -22,12 +22,14 @@ export default defineConfig({
           {
             src: '/assets/icon-1024.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
             src: '/assets/icon-1024.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ],
         // Potrzebne dla Safari / iOS Add to Home Screen
