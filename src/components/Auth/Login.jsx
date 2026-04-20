@@ -22,10 +22,13 @@ export default function Login() {
 
   return (
     <div className="login-screen">
-      <div className="login-card">
-        <div className="login-logo">🧥</div>
+      <div className="login-hero">
+        <img src="/assets/login-hero.png" alt="Wardrobe Wizard" />
+      </div>
+
+      <div className="login-body">
         <h1 className="login-title">Wardrobe Wizard</h1>
-        <p className="login-subtitle">Zaloguj się, aby zarządzać ubraniami</p>
+        <p className="login-subtitle">Zaloguj się do swojej szafy</p>
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
@@ -57,7 +60,7 @@ export default function Login() {
 
           {error && <p className="error-msg">{error}</p>}
 
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <button type="submit" className="btn-login" disabled={loading}>
             {loading ? 'Logowanie...' : 'Zaloguj się'}
           </button>
         </form>

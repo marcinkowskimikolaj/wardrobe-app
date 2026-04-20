@@ -118,7 +118,7 @@ export default function Gallery({ clothes, loading, error, onItemClick, ownerNam
         <div className="gallery-header">
           <div>
             <h1 className="gallery-greeting">
-              {ownerName ? `Cześć, ${ownerName}!` : 'Szafa'}
+              {ownerName ? `Cześć, ${ownerName}!` : 'Wardrobe Wizard'}
             </h1>
             {!loading && (
               <p className="gallery-subtitle">
