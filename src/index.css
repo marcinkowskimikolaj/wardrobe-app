@@ -2021,6 +2021,7 @@ textarea { resize: vertical; }
   margin: 0 0 4px;
   padding: 0;
 }
+.chat-weather-loading { opacity: 0.5; }
 
 .chat-suggestions {
   display: flex;

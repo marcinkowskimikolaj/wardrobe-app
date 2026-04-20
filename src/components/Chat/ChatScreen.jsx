@@ -55,12 +55,16 @@ export default function ChatScreen({ clothes, onItemClick }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [weatherData, setWeatherData] = useState(null)
+  const [weatherData, setWeatherData] = useState(undefined) // undefined = ładuje, null = niedostępna
+  const weatherPromiseRef = useRef(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
   useEffect(() => {
-    getWeatherContext().then(setWeatherData)
+    weatherPromiseRef.current = getWeatherContext().then(data => {
+      setWeatherData(data)
+      return data
+    })
   }, [])
 
   useEffect(() => {
@@ -77,8 +81,12 @@ export default function ChatScreen({ clothes, onItemClick }) {
     setInput('')
     setLoading(true)
 
+    const weather = weatherData === undefined
+      ? await (weatherPromiseRef.current ?? Promise.resolve(null))
+      : weatherData
+
     try {
-      const reply = await sendChatMessage(trimmed, clothes, next, weatherData)
+      const reply = await sendChatMessage(trimmed, clothes, next, weather)
       const assistantMsg = { role: 'assistant', content: reply.text, item_ids: reply.item_ids ?? [] }
       setMessages(prev => [...prev, assistantMsg].slice(-20))
     } catch {
@@ -102,6 +110,9 @@ export default function ChatScreen({ clothes, onItemClick }) {
       </div>
 
       <div className="chat-messages">
+        {weatherData === undefined && messages.length === 0 && (
+          <p className="chat-weather-bar chat-weather-loading">📍 Pobieram prognozę pogody...</p>
+        )}
         {weatherData && messages.length === 0 && (
           <p className="chat-weather-bar">
             📍 {weatherData.current_temp}°C · {weatherData.condition} · deszcz {weatherData.rain_chance}% · wiatr {weatherData.wind_kmh} km/h
