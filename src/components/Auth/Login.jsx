@@ -24,7 +24,7 @@ export default function Login() {
     <div className="login-screen">
       <div className="login-card">
         <div className="login-logo">🧥</div>
-        <h1 className="login-title">Szafa</h1>
+        <h1 className="login-title">Wardrobe Wizard</h1>
         <p className="login-subtitle">Zaloguj się, aby zarządzać ubraniami</p>
 
         <form onSubmit={handleSubmit} className="login-form">

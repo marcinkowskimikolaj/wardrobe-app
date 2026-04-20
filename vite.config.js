@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: {
-        name: 'Szafa — zarządzaj ubraniami',
-        short_name: 'Szafa',
+        name: 'Wardrobe Wizard',
+        short_name: 'Wizard',
         description: 'Zarządzaj swoją szafą ubrań',
         theme_color: '#0f0f0f',
         background_color: '#0f0f0f',
