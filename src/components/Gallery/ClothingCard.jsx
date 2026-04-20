@@ -3,9 +3,9 @@ import { STATUS_COLORS } from '../../config/constants'
 
 export default function ClothingCard({ item, onClick, showOwner = false, style }) {
   const statusColor = STATUS_COLORS[item.status] ?? '#c7c7cc'
-  const isEnglish = s => s && s.includes(' ') && !/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(s)
+  const hasEnglish = str => /^[a-zA-Z\s]+$/.test(str?.trim())
   const subtitle = item.dominant_color
-    ? (isEnglish(item.material) ? item.dominant_color : [item.dominant_color, item.material].filter(Boolean).join(' · '))
+    ? (hasEnglish(item.material) ? item.dominant_color : [item.dominant_color, item.material].filter(Boolean).join(' · '))
     : item.material ?? ''
   const [loaded, setLoaded] = useState(false)
 

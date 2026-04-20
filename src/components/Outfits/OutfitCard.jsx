@@ -5,6 +5,7 @@ import { STATUS_COLORS } from '../../config/constants'
 export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onItemClick }) {
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState(outfit.name ?? 'Outfit')
+  const [saveError, setSaveError] = useState(false)
 
   // Ubrania należące do tego outfitu
   const items = (outfit.clothing_ids ?? [])
@@ -15,10 +16,13 @@ export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onIt
     setEditingName(false)
     if (name === outfit.name) return
     try {
-      const updated = await updateOutfit(outfit.id, { name })
+      await updateOutfit(outfit.id, { name })
       onUpdated(outfit.id, { name })
     } catch (err) {
       console.error(err)
+      setName(outfit.name ?? 'Outfit')
+      setSaveError(true)
+      setTimeout(() => setSaveError(false), 2000)
     }
   }
 
@@ -49,6 +53,7 @@ export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onIt
             <span className="outfit-edit-icon">✎</span>
           </button>
         )}
+        {saveError && <span className="outfit-save-error">Błąd zapisu</span>}
         <div className="outfit-card-meta">
           <span className="outfit-owner">{outfit.owner}</span>
           <button className="outfit-delete-btn" onClick={handleDelete}>✕</button>

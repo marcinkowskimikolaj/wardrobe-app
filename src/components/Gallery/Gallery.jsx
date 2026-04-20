@@ -43,15 +43,32 @@ export default function Gallery({ clothes, loading, error, onItemClick, ownerNam
   const [showFilterSheet, setShowFilterSheet] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [signOutError, setSignOutError] = useState(false)
+  const [avatarPressed, setAvatarPressed] = useState(false)
 
   // Długie przytrzymanie avatara → wylogowanie
   const pressTimer = useRef(null)
+  const halfTimer = useRef(null)
   function handleAvatarPress() {
-    pressTimer.current = setTimeout(() => {
-      if (window.confirm('Wylogować się?')) signOut()
+    halfTimer.current = setTimeout(() => setAvatarPressed(true), 300)
+    pressTimer.current = setTimeout(async () => {
+      setAvatarPressed(false)
+      if (navigator.vibrate) navigator.vibrate(30)
+      if (window.confirm('Wylogować się?')) {
+        try {
+          await signOut()
+        } catch {
+          setSignOutError(true)
+          setTimeout(() => setSignOutError(false), 3000)
+        }
+      }
     }, 600)
   }
-  function handleAvatarRelease() { clearTimeout(pressTimer.current) }
+  function handleAvatarRelease() {
+    clearTimeout(pressTimer.current)
+    clearTimeout(halfTimer.current)
+    setAvatarPressed(false)
+  }
 
   const filtered = useMemo(() => {
     // 1. Filtr widoku (Moje / Wspólna)
@@ -122,9 +139,11 @@ export default function Gallery({ clothes, loading, error, onItemClick, ownerNam
               onMouseDown={handleAvatarPress}
               onMouseUp={handleAvatarRelease}
               aria-label="Profil (przytrzymaj aby wylogować)"
+              style={{ transform: avatarPressed ? 'scale(0.92)' : 'scale(1)', transition: 'transform 0.15s' }}
             >
               {initials}
             </button>
+            {signOutError && <span className="signout-error">Błąd wylogowania</span>}
           </div>
         </div>
 

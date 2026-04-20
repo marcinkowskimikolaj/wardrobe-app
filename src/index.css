@@ -1797,6 +1797,9 @@ textarea { resize: vertical; }
   background: #f0f0f0;
 }
 .load-clean-btn { font-size: 0.9rem; }
+.load-save-error { font-size: 0.8rem; color: var(--red); margin-bottom: 0.5rem; text-align: center; }
+.outfit-save-error { font-size: 0.75rem; color: var(--red); margin-left: 6px; }
+.signout-error { font-size: 0.72rem; color: var(--red); white-space: nowrap; }
 
 /* Empty state */
 .laundry-empty {

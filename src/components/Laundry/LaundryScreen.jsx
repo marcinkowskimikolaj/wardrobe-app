@@ -67,18 +67,25 @@ function LoadCard({ load, onMarkClean }) {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [exitingIds, setExitingIds] = useState([])
+  const [saveError, setSaveError] = useState(false)
 
   async function handleMarkClean() {
     setLoading(true)
-    // Staggered exit animation
+    setSaveError(false)
     for (let i = 0; i < load.items.length; i++) {
       setTimeout(() => setExitingIds(prev => [...prev, load.items[i].id]), i * 80)
     }
     const delay = load.items.length * 80 + 200
     setTimeout(async () => {
-      await onMarkClean(load.items)
-      setDone(true)
-      setLoading(false)
+      try {
+        await onMarkClean(load.items)
+        setDone(true)
+      } catch {
+        setExitingIds([])
+        setSaveError(true)
+      } finally {
+        setLoading(false)
+      }
     }, delay)
   }
 
@@ -114,6 +121,9 @@ function LoadCard({ load, onMarkClean }) {
           <div className="load-thumb load-thumb-more">+{load.items.length - 6}</div>
         )}
       </div>
+      {saveError && (
+        <p className="load-save-error">Błąd zapisu, spróbuj ponownie</p>
+      )}
       <button className="btn-primary load-clean-btn" onClick={handleMarkClean} disabled={loading}>
         {loading ? 'Zapisuję...' : 'Oznacz jako wyprane ✓'}
       </button>
@@ -134,6 +144,7 @@ export default function LaundryScreen({ clothes, onUpdated }) {
           .then(() => onUpdated(item.id, { status: STATUSES.CLEAN, last_washed: now }))
       )
     )
+    // throws on any failure — LoadCard handles the error state
   }
 
   if (!dirty.length) {
