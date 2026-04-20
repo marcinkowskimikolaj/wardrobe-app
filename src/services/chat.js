@@ -1,0 +1,77 @@
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const GROQ_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'
+
+export async function sendChatMessage(userMessage, clothes, history = []) {
+  const apiKey = import.meta.env.VITE_GROQ_API_KEY
+  if (!apiKey) throw new Error('Brak klucza VITE_GROQ_API_KEY')
+
+  const wardrobeContext = clothes.map(c => ({
+    id: c.id,
+    category: c.category,
+    dominant_color: c.dominant_color,
+    material: c.material,
+    formality: c.formality,
+    pattern: c.pattern,
+    season: c.season,
+    style_tags: c.style_tags,
+    prompt_tags: c.prompt_tags,
+    fit: c.fit,
+    status: c.status,
+    owner: c.owner
+  }))
+
+  const systemPrompt = `Jesteś asystentem szafy. Znasz całą zawartość szafy użytkownika.
+Pomagasz dobierać stylizacje, odpowiadasz na pytania o ubrania,
+rekomendasz co założyć na różne okazje.
+
+SZAFA UŻYTKOWNIKA (JSON):
+${JSON.stringify(wardrobeContext)}
+
+Zasady odpowiedzi:
+- Zawsze po polsku
+- Odpowiedzi zwięzłe (max 3-4 zdania tekstu)
+- Jeśli rekomenduje konkretne ubrania — zwróć ich ID w tablicy
+- Format odpowiedzi: JSON { "text": "odpowiedź", "item_ids": ["id1","id2"] }
+- Jeśli pytanie nie dotyczy ubrań — odpowiedz { "text": "Mogę pomóc tylko w temacie Twojej szafy 😊", "item_ids": [] }
+- item_ids: puste [] jeśli brak konkretnych rekomendacji
+- Zwróć TYLKO JSON bez żadnego tekstu przed ani po`
+
+  const recentHistory = history.slice(-6).map(m => ({
+    role: m.role,
+    content: m.content
+  }))
+
+  const response = await fetch(GROQ_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...recentHistory,
+        { role: 'user', content: userMessage }
+      ],
+      temperature: 0.7,
+      max_tokens: 512
+    })
+  })
+
+  if (!response.ok) {
+    const err = await response.text()
+    throw new Error(`Groq API error ${response.status}: ${err}`)
+  }
+
+  const result = await response.json()
+  const rawText = result.choices?.[0]?.message?.content ?? ''
+  const jsonMatch = rawText.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) return { text: rawText, item_ids: [] }
+
+  try {
+    return JSON.parse(jsonMatch[0])
+  } catch {
+    return { text: rawText, item_ids: [] }
+  }
+}

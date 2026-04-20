@@ -9,11 +9,12 @@ import AddClothing from './components/AddClothing/AddClothing'
 import ClothingDetail from './components/ClothingDetail/ClothingDetail'
 import OutfitsScreen from './components/Outfits/OutfitsScreen'
 import LaundryScreen from './components/Laundry/LaundryScreen'
+import ChatScreen from './components/Chat/ChatScreen'
 import BottomNav from './components/UI/BottomNav'
 import LoadingSpinner from './components/UI/LoadingSpinner'
 
-const SCREENS = { GALLERY: 'gallery', ADD: 'add', DETAIL: 'detail', OUTFITS: 'outfits', LAUNDRY: 'laundry' }
-const TAB_INDEX = { [SCREENS.GALLERY]: 0, [SCREENS.OUTFITS]: 1, [SCREENS.LAUNDRY]: 2 }
+const SCREENS = { GALLERY: 'gallery', ADD: 'add', DETAIL: 'detail', OUTFITS: 'outfits', LAUNDRY: 'laundry', CHAT: 'chat' }
+const TAB_INDEX = { [SCREENS.GALLERY]: 0, [SCREENS.OUTFITS]: 1, [SCREENS.LAUNDRY]: 2, [SCREENS.CHAT]: 3 }
 
 export default function App() {
   const { user, loading: authLoading } = useAuth()
@@ -62,6 +63,7 @@ export default function App() {
   const showBottomNav = screen !== SCREENS.ADD && screen !== SCREENS.DETAIL && !exitingDetail
   const navScreen = screen === SCREENS.OUTFITS ? 'outfits'
     : screen === SCREENS.LAUNDRY ? 'laundry'
+    : screen === SCREENS.CHAT ? 'chat'
     : 'gallery'
   const slideClass = slideDir === 'right' ? 'screen-enter-right' : 'screen-enter-left'
 
@@ -126,6 +128,12 @@ export default function App() {
         </div>
       )}
 
+      {(screen === SCREENS.CHAT || exitingTab === SCREENS.CHAT) && (
+        <div className={`screen-overlay ${exitingTab === SCREENS.CHAT ? 'screen-exit-right' : slideClass}`}>
+          <ChatScreen clothes={clothes} onItemClick={openDetail} />
+        </div>
+      )}
+
       {showBottomNav && (
         <BottomNav
           activeScreen={navScreen}
@@ -133,6 +141,7 @@ export default function App() {
           onOutfits={() => navigateTo(SCREENS.OUTFITS)}
           onLaundry={() => navigateTo(SCREENS.LAUNDRY)}
           onAddClick={() => setScreen(SCREENS.ADD)}
+          onChat={() => navigateTo(SCREENS.CHAT)}
         />
       )}
     </div>
