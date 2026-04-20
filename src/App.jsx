@@ -13,6 +13,7 @@ import BottomNav from './components/UI/BottomNav'
 import LoadingSpinner from './components/UI/LoadingSpinner'
 
 const SCREENS = { GALLERY: 'gallery', ADD: 'add', DETAIL: 'detail', OUTFITS: 'outfits', LAUNDRY: 'laundry' }
+const TAB_INDEX = { [SCREENS.GALLERY]: 0, [SCREENS.OUTFITS]: 1, [SCREENS.LAUNDRY]: 2 }
 
 export default function App() {
   const { user, loading: authLoading } = useAuth()
@@ -22,6 +23,8 @@ export default function App() {
   const [screen, setScreen] = useState(SCREENS.GALLERY)
   const [selectedItem, setSelectedItem] = useState(null)
   const [exitingDetail, setExitingDetail] = useState(false)
+  const [slideDir, setSlideDir] = useState('right')
+  const [exitingTab, setExitingTab] = useState(null)
 
   if (authLoading) return <LoadingSpinner text="Ładowanie..." />
   if (!user) return <Login />
@@ -45,10 +48,22 @@ export default function App() {
     }
   }
 
+  function navigateTo(newScreen) {
+    const oldIdx = TAB_INDEX[screen] ?? 0
+    const newIdx = TAB_INDEX[newScreen] ?? 0
+    setSlideDir(newIdx >= oldIdx ? 'right' : 'left')
+    if (newScreen === SCREENS.GALLERY && screen !== SCREENS.GALLERY) {
+      setExitingTab(screen)
+      setTimeout(() => setExitingTab(null), 260)
+    }
+    setScreen(newScreen)
+  }
+
   const showBottomNav = screen !== SCREENS.ADD && screen !== SCREENS.DETAIL && !exitingDetail
   const navScreen = screen === SCREENS.OUTFITS ? 'outfits'
     : screen === SCREENS.LAUNDRY ? 'laundry'
     : 'gallery'
+  const slideClass = slideDir === 'right' ? 'screen-enter-right' : 'screen-enter-left'
 
   return (
     <div className="app">
@@ -65,6 +80,7 @@ export default function App() {
       {(screen === SCREENS.DETAIL || exitingDetail) && selectedItem && (
         <div className={`screen-overlay ${exitingDetail ? 'screen-slide-exit' : 'screen-slide-enter'}`}>
           <ClothingDetail
+            key={selectedItem.id}
             item={selectedItem}
             clothes={clothes}
             outfits={outfits}
@@ -72,6 +88,7 @@ export default function App() {
             onUpdated={(id, updates) => { updateLocalItem(id, updates); setSelectedItem(prev => ({ ...prev, ...updates })) }}
             onDeleted={(id) => { removeLocalItem(id); backToGallery() }}
             onOutfitAdded={(outfit) => addOutfitLocal(outfit)}
+            onItemClick={openDetail}
           />
         </div>
       )}
@@ -82,8 +99,8 @@ export default function App() {
         </div>
       )}
 
-      {screen === SCREENS.OUTFITS && (
-        <div className="screen-overlay screen-slide-enter">
+      {(screen === SCREENS.OUTFITS || exitingTab === SCREENS.OUTFITS) && (
+        <div className={`screen-overlay ${exitingTab === SCREENS.OUTFITS ? 'screen-exit-right' : slideClass}`}>
           <OutfitsScreen
             outfits={outfits}
             loading={outfitsLoading}
@@ -92,12 +109,16 @@ export default function App() {
             onUpdated={updateOutfitLocal}
             onDeleted={removeOutfitLocal}
             onItemClick={openDetail}
+            onOutfitAdded={addOutfitLocal}
+            onAddClick={() => setScreen(SCREENS.ADD)}
+            user={user}
+            onReload={reload}
           />
         </div>
       )}
 
-      {screen === SCREENS.LAUNDRY && (
-        <div className="screen-overlay screen-slide-enter">
+      {(screen === SCREENS.LAUNDRY || exitingTab === SCREENS.LAUNDRY) && (
+        <div className={`screen-overlay ${exitingTab === SCREENS.LAUNDRY ? 'screen-exit-right' : slideClass}`}>
           <LaundryScreen
             clothes={clothes}
             onUpdated={(id, updates) => updateLocalItem(id, updates)}
@@ -108,9 +129,9 @@ export default function App() {
       {showBottomNav && (
         <BottomNav
           activeScreen={navScreen}
-          onGallery={backToGallery}
-          onOutfits={() => setScreen(SCREENS.OUTFITS)}
-          onLaundry={() => setScreen(SCREENS.LAUNDRY)}
+          onGallery={() => navigateTo(SCREENS.GALLERY)}
+          onOutfits={() => navigateTo(SCREENS.OUTFITS)}
+          onLaundry={() => navigateTo(SCREENS.LAUNDRY)}
           onAddClick={() => setScreen(SCREENS.ADD)}
         />
       )}

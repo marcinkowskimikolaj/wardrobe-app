@@ -155,7 +155,7 @@ export default function LaundryScreen({ clothes, onUpdated }) {
     <div className="laundry-screen">
       <div className="laundry-header">
         <h1 className="laundry-title">Pranie</h1>
-        <span className="laundry-header-count">{dirty.length} rzeczy</span>
+        <span className="laundry-header-count">{dirty.length} {dirty.length === 1 ? 'rzecz' : 'rzeczy'}</span>
       </div>
 
       {/* Sekcja 1 — Kosz */}

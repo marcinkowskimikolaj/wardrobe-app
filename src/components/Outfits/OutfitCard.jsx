@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { updateOutfit, deleteOutfit } from '../../services/supabase'
+import { STATUS_COLORS } from '../../config/constants'
 
 export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onItemClick }) {
   const [editingName, setEditingName] = useState(false)
@@ -66,6 +67,7 @@ export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onIt
               ) : (
                 <span>🧥</span>
               )}
+              <span className="card-status-dot" style={{ background: STATUS_COLORS[item.status] ?? '#c7c7cc' }} />
             </div>
           ))
         )}

@@ -1,14 +1,28 @@
+import { useState } from 'react'
 import { STATUS_COLORS } from '../../config/constants'
 
 export default function ClothingCard({ item, onClick, showOwner = false, style }) {
   const statusColor = STATUS_COLORS[item.status] ?? '#c7c7cc'
-  const subtitle = [item.material, item.colors?.[0]].filter(Boolean).join(' · ')
+  const isEnglish = s => s && s.includes(' ') && !/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(s)
+  const subtitle = item.dominant_color
+    ? (isEnglish(item.material) ? item.dominant_color : [item.dominant_color, item.material].filter(Boolean).join(' · '))
+    : item.material ?? ''
+  const [loaded, setLoaded] = useState(false)
 
   return (
     <div className="clothing-card" onClick={onClick} style={style}>
       <div className="card-photo-wrap">
         {item.photo_url ? (
-          <img src={item.photo_url} alt={item.category ?? 'Ubranie'} className="card-photo" loading="lazy" />
+          <>
+            {!loaded && <div className="card-photo-shimmer" />}
+            <img
+              src={item.photo_url}
+              alt={item.category ?? 'Ubranie'}
+              className={`card-photo${loaded ? ' card-photo-loaded' : ''}`}
+              loading="lazy"
+              onLoad={() => setLoaded(true)}
+            />
+          </>
         ) : (
           <div className="card-photo-placeholder">🧥</div>
         )}

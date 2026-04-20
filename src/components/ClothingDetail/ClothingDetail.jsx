@@ -29,7 +29,7 @@ function ColorDot({ color }) {
   return <span className="color-dot" title={color}>{color}</span>
 }
 
-export default function ClothingDetail({ item, onClose, onUpdated, onDeleted, clothes = [], outfits = [], onOutfitAdded }) {
+export default function ClothingDetail({ item, onClose, onUpdated, onDeleted, clothes = [], outfits = [], onOutfitAdded, onItemClick }) {
   const [currentItem, setCurrentItem] = useState(item)
   const [editing, setEditing] = useState(false)
   const [formData, setFormData] = useState(itemToFormData(item))
@@ -156,6 +156,7 @@ export default function ClothingDetail({ item, onClose, onUpdated, onDeleted, cl
           {/* Powiększona metka */}
           {labelExpanded && (
             <div className="overlay" onClick={() => setLabelExpanded(false)}>
+              <button className="label-close-btn" onClick={() => setLabelExpanded(false)}>✕</button>
               <img src={currentItem.label_photo_url} alt="Metka"
                 className="label-fullscreen" onClick={e => e.stopPropagation()} />
             </div>
@@ -207,33 +208,34 @@ export default function ClothingDetail({ item, onClose, onUpdated, onDeleted, cl
             </div>
           )}
 
-          {/* Pasuje do — outfity */}
+          {/* Pasuje do — ubrania z outfitów */}
           <div className="detail-section">
             <p className="detail-section-label">Pasuje do</p>
-            {itemOutfits.length > 0 && (
-              <div className="outfit-related-list">
-                {itemOutfits.map(outfit => {
-                  const others = (outfit.clothing_ids ?? [])
+            {itemOutfits.length > 0 && (() => {
+              const peers = [...new Map(
+                itemOutfits.flatMap(o =>
+                  (o.clothing_ids ?? [])
                     .filter(id => id !== currentItem.id)
                     .map(id => clothes.find(c => c.id === id))
                     .filter(Boolean)
-                  return (
-                    <div key={outfit.id} className="outfit-related-row">
-                      <span className="outfit-related-name">{outfit.name}</span>
-                      <div className="outfit-related-thumbs">
-                        {others.slice(0, 5).map(c => (
-                          <div key={c.id} className="outfit-thumb-sm">
-                            {c.photo_url
-                              ? <img src={c.photo_url} alt={c.category ?? ''} />
-                              : <span>🧥</span>}
-                          </div>
-                        ))}
+                    .map(c => [c.id, c])
+                )
+              ).values()]
+              return peers.length > 0 ? (
+                <div className="outfit-peers-row">
+                  {peers.map(c => (
+                    <div key={c.id} className="outfit-peer-item" onClick={() => onItemClick?.(c)}>
+                      <div className="outfit-peer-photo">
+                        {c.photo_url
+                          ? <img src={c.photo_url} alt={c.category ?? ''} />
+                          : <span>🧥</span>}
                       </div>
+                      <span className="outfit-peer-label">{c.category}</span>
                     </div>
-                  )
-                })}
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : null
+            })()}
             <button className="btn-outfit-add" onClick={() => setShowOutfitPicker(true)}>
               + Dodaj do outfitu
             </button>

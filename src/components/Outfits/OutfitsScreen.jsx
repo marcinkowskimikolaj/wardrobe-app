@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import LoadingSpinner from '../UI/LoadingSpinner'
 import OutfitCard from './OutfitCard'
+import StyleScanner from './StyleScanner'
 
-export default function OutfitsScreen({ outfits, loading, error, clothes, onUpdated, onDeleted, onItemClick }) {
+export default function OutfitsScreen({ outfits, loading, error, clothes, onUpdated, onDeleted, onItemClick, onOutfitAdded, onAddClick, user, onReload }) {
+  const [showScanner, setShowScanner] = useState(false)
+
   return (
     <div className="outfits-screen">
       <div className="gallery-header">
@@ -11,14 +15,19 @@ export default function OutfitsScreen({ outfits, loading, error, clothes, onUpda
         </div>
       </div>
 
+      <button className="btn-scan-outfit" onClick={() => setShowScanner(true)}>
+        ✨ Skanuj stylizację
+      </button>
+
       {loading && <LoadingSpinner text="Ładuję outfity..." />}
       {error && <p className="error-msg" style={{ padding: '1rem' }}>Błąd: {error}</p>}
 
       {!loading && !error && (
         outfits.length === 0 ? (
           <div className="gallery-empty">
-            <span className="empty-icon">👗</span>
-            <p>Brak outfitów.<br />Dodaj ze szczegółów ubrania.</p>
+            <span className="empty-icon empty-icon-sway">👗</span>
+            <p className="gallery-empty-title">Brak outfitów</p>
+            <p className="gallery-empty-sub">Dodaj ze szczegółów ubrania lub użyj skanera.</p>
           </div>
         ) : (
           <div className="outfits-list">
@@ -34,6 +43,16 @@ export default function OutfitsScreen({ outfits, loading, error, clothes, onUpda
             ))}
           </div>
         )
+      )}
+
+      {showScanner && (
+        <StyleScanner
+          clothes={clothes}
+          user={user}
+          onReload={onReload}
+          onSaved={outfit => { onOutfitAdded?.(outfit); setShowScanner(false) }}
+          onClose={() => setShowScanner(false)}
+        />
       )}
     </div>
   )

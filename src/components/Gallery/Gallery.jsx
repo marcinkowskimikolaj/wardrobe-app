@@ -17,16 +17,20 @@ function applyFilters(clothes, sheetFilters) {
 }
 
 function searchClothes(clothes, query) {
-  if (!query.trim()) return clothes
-  const terms = query.toLowerCase().split(/\s+/).filter(Boolean)
-  return clothes.filter(item => {
-    const haystack = [
-      item.category, item.material, item.notes, item.ai_description,
-      ...(item.colors ?? []), ...(item.style_tags ?? []),
-      ...(item.season ?? []), ...(item.prompt_tags ?? []),
-    ].filter(Boolean).map(s => s.toLowerCase()).join(' ')
-    return terms.every(t => haystack.includes(t))
-  })
+  const q = query.toLowerCase().trim()
+  if (!q) return clothes
+  return clothes.filter(item =>
+    item.category?.toLowerCase().includes(q) ||
+    item.material?.toLowerCase().includes(q) ||
+    item.notes?.toLowerCase().includes(q) ||
+    item.dominant_color?.toLowerCase().includes(q) ||
+    item.pattern?.toLowerCase().includes(q) ||
+    item.formality?.toLowerCase().includes(q) ||
+    item.colors?.some(c => c.toLowerCase().includes(q)) ||
+    item.style_tags?.some(t => t.toLowerCase().includes(q)) ||
+    item.season?.some(s => s.toLowerCase().includes(q)) ||
+    item.prompt_tags?.some(t => t.toLowerCase().includes(q))
+  )
 }
 
 function countActiveFilters(f) {
@@ -77,66 +81,73 @@ export default function Gallery({ clothes, loading, error, onItemClick, ownerNam
           onClose={() => { setSearchOpen(false); setSearchQuery('') }}
           clothes={clothes}
         />
-        {searchQuery && (
-          <div className="clothes-grid" key={searchQuery} style={{ padding: '0.75rem 16px' }}>
-            {filtered.map((item, index) => (
-              <ClothingCard key={item.id} item={item} onClick={() => onItemClick(item)} showOwner={viewMode === 'all'} style={{ '--index': index }} />
-            ))}
-          </div>
-        )}
+        <div className="gallery-scroll">
+          {searchQuery && (
+            <div className="clothes-grid" key={searchQuery}>
+              {filtered.map((item, index) => (
+                <ClothingCard key={item.id} item={item} onClick={() => onItemClick(item)} showOwner={viewMode === 'all'} style={{ '--index': index }} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     )
   }
 
   return (
     <div className="gallery-screen">
-      {/* Header */}
-      <div className="gallery-header">
-        <div>
-          <h1 className="gallery-greeting">
-            {ownerName ? `Cześć, ${ownerName}!` : 'Szafa'}
-          </h1>
-          {!loading && (
-            <p className="gallery-subtitle">
-              {filtered.length} {filtered.length === 1 ? 'ubranie' : filtered.length < 5 ? 'ubrania' : 'ubrań'} w szafie
-            </p>
-          )}
+      {/* Sticky header */}
+      <div className="gallery-sticky-header">
+        <div className="gallery-header">
+          <div>
+            <h1 className="gallery-greeting">
+              {ownerName ? `Cześć, ${ownerName}!` : 'Szafa'}
+            </h1>
+            {!loading && (
+              <p className="gallery-subtitle">
+                {filtered.length} {filtered.length === 1 ? 'ubranie' : filtered.length < 5 ? 'ubrania' : 'ubrań'} w szafie
+              </p>
+            )}
+          </div>
+          <div className="gallery-header-right">
+            <button className="btn-icon-header" onClick={() => setSearchOpen(true)} aria-label="Szukaj">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </button>
+            <button
+              className="gallery-avatar"
+              onTouchStart={handleAvatarPress}
+              onTouchEnd={handleAvatarRelease}
+              onMouseDown={handleAvatarPress}
+              onMouseUp={handleAvatarRelease}
+              aria-label="Profil (przytrzymaj aby wylogować)"
+            >
+              {initials}
+            </button>
+          </div>
         </div>
-        <div className="gallery-header-right">
-          <button className="btn-icon-header" onClick={() => setSearchOpen(true)} aria-label="Szukaj">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+
+        {/* View toggle + Filter */}
+        <div className="gallery-controls">
+          <div className="view-toggle">
+            <button className={`view-pill ${viewMode === 'mine' ? 'active' : ''}`}
+              onClick={() => setViewMode('mine')}>
+              👤 Moje
+            </button>
+            <button className={`view-pill ${viewMode === 'all' ? 'active' : ''}`}
+              onClick={() => setViewMode('all')}>
+              👥 Wspólna szafa
+            </button>
+          </div>
+          <button className={`filter-trigger ${activeFilterCount > 0 ? 'active' : ''}`}
+            onClick={() => setShowFilterSheet(true)}>
+            Filtruj{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '3px', marginBottom: '1px' }}>
+              <polyline points="2 4 6 8 10 4"/>
             </svg>
           </button>
-          <button
-            className="gallery-avatar"
-            onTouchStart={handleAvatarPress}
-            onTouchEnd={handleAvatarRelease}
-            onMouseDown={handleAvatarPress}
-            onMouseUp={handleAvatarRelease}
-            aria-label="Profil (przytrzymaj aby wylogować)"
-          >
-            {initials}
-          </button>
         </div>
-      </div>
-
-      {/* View toggle + Filter */}
-      <div className="gallery-controls">
-        <div className="view-toggle">
-          <button className={`view-pill ${viewMode === 'mine' ? 'active' : ''}`}
-            onClick={() => setViewMode('mine')}>
-            👤 Moje
-          </button>
-          <button className={`view-pill ${viewMode === 'all' ? 'active' : ''}`}
-            onClick={() => setViewMode('all')}>
-            👥 Wspólna szafa
-          </button>
-        </div>
-        <button className={`filter-trigger ${activeFilterCount > 0 ? 'active' : ''}`}
-          onClick={() => setShowFilterSheet(true)}>
-          Filtruj{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''} ⌄
-        </button>
       </div>
 
       {showFilterSheet && (
@@ -147,24 +158,28 @@ export default function Gallery({ clothes, loading, error, onItemClick, ownerNam
         />
       )}
 
-      {loading && <LoadingSpinner text="Ładuję szafę..." />}
-      {error && <p className="error-msg" style={{ margin: '1rem' }}>Błąd: {error}</p>}
+      {/* Scrollable content */}
+      <div className="gallery-scroll">
+        {loading && <LoadingSpinner text="Ładuję szafę..." />}
+        {error && <p className="error-msg" style={{ margin: '1rem 0' }}>Błąd: {error}</p>}
 
-      {!loading && !error && (
-        filtered.length === 0 ? (
-          <div className="gallery-empty">
-            <span className="empty-icon">🧺</span>
-            <p>Brak ubrań.<br />Dodaj pierwsze tapnięciem +</p>
-          </div>
-        ) : (
-          <div className="clothes-grid" key={gridKey}>
-            {filtered.map((item, index) => (
-              <ClothingCard key={item.id} item={item} onClick={() => onItemClick(item)}
-                showOwner={viewMode === 'all'} style={{ '--index': index }} />
-            ))}
-          </div>
-        )
-      )}
+        {!loading && !error && (
+          filtered.length === 0 ? (
+            <div className="gallery-empty">
+              <span className="empty-icon empty-icon-sway">👗</span>
+              <p className="gallery-empty-title">Szafa czeka na ubrania</p>
+              <p className="gallery-empty-sub">Dodaj pierwsze tapnięciem +</p>
+            </div>
+          ) : (
+            <div className="clothes-grid" key={gridKey}>
+              {filtered.map((item, index) => (
+                <ClothingCard key={item.id} item={item} onClick={() => onItemClick(item)}
+                  showOwner={viewMode === 'all'} style={{ '--index': index }} />
+              ))}
+            </div>
+          )
+        )}
+      </div>
     </div>
   )
 }

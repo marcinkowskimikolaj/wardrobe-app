@@ -67,7 +67,7 @@ export default function FilterSheet({ activeFilters, onApply, onClose }) {
         <div className="sheet-section">
           <p className="sheet-section-label">Kategoria</p>
           <div className="sheet-chips">
-            {CATEGORIES.slice(0, 10).map(cat => (
+            {CATEGORIES.map(cat => (
               <button key={cat} className={`sheet-chip ${isActive('categories', cat) ? 'active' : ''}`}
                 onClick={() => toggle('categories', cat)}>
                 {cat}

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { analyzeClothing } from '../../services/groq'
 import { GROQ_MODEL } from '../../services/groq'
 import { addClothing, uploadPhoto } from '../../services/supabase'
-import { DEV_EMAIL } from '../../config/constants'
+import { DEV_EMAIL, getOwnerFromEmail } from '../../config/constants'
 import PhotoStep from './PhotoStep'
 import AnalyzingStep from './AnalyzingStep'
 import FormStep from './FormStep'
@@ -23,6 +23,14 @@ const EMPTY_FORM = {
   ai_description: '',
   notes: '',
   prompt_tags: [],
+  fit: null,
+  neckline: null,
+  sleeve_length: null,
+  length: null,
+  pattern: null,
+  formality: null,
+  dominant_color: null,
+  secondary_colors: [],
 }
 
 // embedding_ready = true jeśli AI wypełniło kluczowe pola do wyszukiwania
@@ -34,13 +42,14 @@ export default function AddClothing({ onClose, onSaved, user }) {
   const [step, setStep] = useState(STEPS.PHOTO)
   const [clothingFile, setClothingFile] = useState(null)
   const [labelFile, setLabelFile] = useState(null)
-  const [formData, setFormData] = useState(EMPTY_FORM)
+  const [formData, setFormData] = useState({ ...EMPTY_FORM })
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
   // Tryb ręczny — dostępny tylko dla DEV_EMAIL
   const [manualMode, setManualMode] = useState(false)
 
   const isDevUser = user?.email === DEV_EMAIL
+  const ownerName = getOwnerFromEmail(user?.email) ?? ''
 
   async function handleAnalyze() {
     setStep(STEPS.ANALYZING)
@@ -48,6 +57,7 @@ export default function AddClothing({ onClose, onSaved, user }) {
       const aiResult = await analyzeClothing(clothingFile, labelFile)
       setFormData(prev => ({
         ...prev,
+        owner: prev.owner || ownerName,
         category: aiResult.category ?? '',
         colors: Array.isArray(aiResult.colors) ? aiResult.colors : [],
         material: aiResult.material ?? '',
@@ -59,6 +69,14 @@ export default function AddClothing({ onClose, onSaved, user }) {
         ironing: aiResult.ironing ?? '',
         ai_description: aiResult.ai_description ?? '',
         prompt_tags: Array.isArray(aiResult.prompt_tags) ? aiResult.prompt_tags : [],
+        fit: aiResult.fit ?? null,
+        neckline: aiResult.neckline ?? null,
+        sleeve_length: aiResult.sleeve_length ?? null,
+        length: aiResult.length ?? null,
+        pattern: aiResult.pattern ?? null,
+        formality: aiResult.formality ?? null,
+        dominant_color: aiResult.dominant_color ?? null,
+        secondary_colors: Array.isArray(aiResult.secondary_colors) ? aiResult.secondary_colors : [],
       }))
       setStep(STEPS.FORM)
     } catch (err) {
@@ -70,7 +88,7 @@ export default function AddClothing({ onClose, onSaved, user }) {
 
   function handleSkipToManual() {
     setManualMode(true)
-    setFormData(EMPTY_FORM)
+    setFormData({ ...EMPTY_FORM, owner: ownerName })
     setStep(STEPS.FORM)
   }
 
