@@ -20,7 +20,7 @@ export async function getWeatherContext() {
     const pos = await getPosition()
     const { latitude: lat, longitude: lon } = pos.coords
 
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,windspeed_10m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode&timezone=auto&forecast_days=1`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,windspeed_10m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode&timezone=auto&forecast_days=3`
 
     const res = await fetch(url)
     if (!res.ok) return null
@@ -28,9 +28,22 @@ export async function getWeatherContext() {
 
     const c = data.current
     const d = data.daily
+
     const condition = WEATHER_CODES[c.weathercode] ?? 'nieznane warunki'
     const rainChance = d.precipitation_probability_max?.[0] ?? 0
     const windKmh = Math.round(c.windspeed_10m)
+
+    const days = d.time?.map((date, i) => ({
+      date,
+      condition: WEATHER_CODES[d.weathercode?.[i]] ?? 'nieznane warunki',
+      temp_max: Math.round(d.temperature_2m_max?.[i] ?? 0),
+      temp_min: Math.round(d.temperature_2m_min?.[i] ?? 0),
+      rain_chance: d.precipitation_probability_max?.[i] ?? 0
+    })) ?? []
+
+    const forecastLines = days.map(day =>
+      `  ${day.date}: ${day.temp_min}–${day.temp_max}°C, ${day.condition}, deszcz ${day.rain_chance}%`
+    ).join('\n')
 
     return {
       current_temp: Math.round(c.temperature_2m),
@@ -40,7 +53,8 @@ export async function getWeatherContext() {
       wind_kmh: windKmh,
       temp_max: Math.round(d.temperature_2m_max?.[0] ?? c.temperature_2m),
       temp_min: Math.round(d.temperature_2m_min?.[0] ?? c.temperature_2m),
-      summary: `${Math.round(c.temperature_2m)}°C, ${condition}, szansa deszczu ${rainChance}%, wiatr ${windKmh} km/h`
+      days,
+      summary: `Dziś: ${Math.round(c.temperature_2m)}°C, ${condition}, szansa deszczu ${rainChance}%, wiatr ${windKmh} km/h\nPrognoza 3 dni:\n${forecastLines}`
     }
   } catch {
     return null
