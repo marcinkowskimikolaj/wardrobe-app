@@ -314,7 +314,7 @@ RLS enabled — users can only read/write their own rows.
 - **Region:** West EU (Ireland)
 - **URL env:** `VITE_SUPABASE_URL`
 - **Anon key env:** `VITE_SUPABASE_ANON_KEY`
-- **CLI token (in memory):** `sbp_52ebd5da3c7fc5595074821cc7c583f7d045c9af`
+- **CLI token (in memory):** `[TOKEN UNIEWAŻNIONY]`
 - **Storage bucket:** `clothes-photos` (public)
 
 ### Open-Meteo
