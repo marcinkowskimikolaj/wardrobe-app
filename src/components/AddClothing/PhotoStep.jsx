@@ -33,16 +33,14 @@ export default function PhotoStep({ clothingFile, labelFile, onClothingChange, o
         ) : (
           <div className="zone-empty">
             <div className="zone-icon-wrap">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-              </svg>
+              <img src="/assets/camera.png" className="pixel-icon" width="48" height="48"
+                style={{ borderRadius: '10px', opacity: 0.6 }} alt="Aparat" />
             </div>
             <p className="zone-label">Zrób zdjęcie ubrania</p>
             <p className="zone-hint">lub wybierz z galerii</p>
           </div>
         )}
-        <input ref={clothingInputRef} type="file" accept="image/*" capture="environment"
+        <input ref={clothingInputRef} type="file" accept="image/*"
           onChange={e => handleFileChange(e, onClothingChange)} hidden />
       </div>
 
@@ -58,14 +56,15 @@ export default function PhotoStep({ clothingFile, labelFile, onClothingChange, o
           </>
         ) : (
           <div className="zone-empty horizontal">
-            <span className="zone-icon-sm">🏷️</span>
+            <img src="/assets/label-tag.png" className="pixel-icon zone-icon-sm" width="32" height="32"
+              style={{ borderRadius: '8px', opacity: 0.7 }} alt="Metka" />
             <div>
               <p className="zone-label">Dodaj zdjęcie metki</p>
               <p className="zone-hint">opcjonalne — dla dokładniejszego prania</p>
             </div>
           </div>
         )}
-        <input ref={labelInputRef} type="file" accept="image/*" capture="environment"
+        <input ref={labelInputRef} type="file" accept="image/*"
           onChange={e => handleFileChange(e, onLabelChange)} hidden />
       </div>
 
@@ -76,7 +75,8 @@ export default function PhotoStep({ clothingFile, labelFile, onClothingChange, o
       {/* Sticky footer z przyciskiem */}
       <div className="photo-step-footer">
         <button className="btn-primary" onClick={onAnalyze} disabled={!clothingFile}>
-          Analizuj z AI ✦
+          <img src="/assets/Rozdzka.png" className="pixel-icon" width="22" height="22" style={{ borderRadius: '4px', marginRight: '8px' }} />
+          Analizuj z AI
         </button>
       </div>
     </div>

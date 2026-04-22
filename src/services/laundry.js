@@ -1,4 +1,4 @@
-import { STATUSES } from '../config/constants'
+import { STATUSES, WASH_COLOR_GROUPS } from '../config/constants'
 
 const DIRTY = [STATUSES.USED, STATUSES.WASHING]
 
@@ -16,6 +16,8 @@ export function groupByOwner(clothes) {
   return groups
 }
 
+const COLOR_ORDER = ['białe', 'jasne', 'kolorowe', 'ciemne', 'delikatne']
+
 export function recommendLaundryLoads(clothes) {
   const dirty = getDirtyClothes(clothes)
   if (!dirty.length) return []
@@ -24,15 +26,19 @@ export function recommendLaundryLoads(clothes) {
   for (const item of dirty) {
     const temp = item.washing_temp ?? null
     const mode = item.washing_mode ?? null
-    const key = `${temp ?? 'brak'}__${mode ?? 'brak'}`
-    if (!groups[key]) groups[key] = { temp, mode, items: [] }
+    const colorGroup = WASH_COLOR_GROUPS.includes(item.wash_color_group) ? item.wash_color_group : null
+    const key = `${temp ?? 'brak'}__${mode ?? 'brak'}__${colorGroup ?? 'brak'}`
+    if (!groups[key]) groups[key] = { temp, mode, colorGroup, items: [] }
     groups[key].items.push(item)
   }
 
   return Object.values(groups).sort((a, b) => {
     const ta = a.temp ?? 999
     const tb = b.temp ?? 999
-    return ta - tb
+    if (ta !== tb) return ta - tb
+    const ca = COLOR_ORDER.indexOf(a.colorGroup ?? '')
+    const cb = COLOR_ORDER.indexOf(b.colorGroup ?? '')
+    return (ca === -1 ? 99 : ca) - (cb === -1 ? 99 : cb)
   })
 }
 

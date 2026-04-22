@@ -27,12 +27,13 @@ export function onAuthStateChange(callback) {
 // ─── CLOTHES — ODCZYT ────────────────────────────────────────────────────────
 
 export async function fetchClothes() {
-  const { data, error } = await supabase
-    .from('clothes')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data
+  const [clothesRes, favsRes] = await Promise.all([
+    supabase.from('clothes').select('*').order('created_at', { ascending: false }),
+    supabase.from('user_favorites').select('clothing_id'),
+  ])
+  if (clothesRes.error) throw clothesRes.error
+  const favSet = new Set((favsRes.data ?? []).map(f => f.clothing_id))
+  return clothesRes.data.map(item => ({ ...item, is_favorite: favSet.has(item.id) }))
 }
 
 export async function fetchClothingById(id) {
@@ -74,6 +75,17 @@ export async function deleteClothing(id) {
     .delete()
     .eq('id', id)
   if (error) throw error
+}
+
+export async function toggleFavorite(id, currentValue) {
+  if (currentValue) {
+    const { error } = await supabase.from('user_favorites').delete().eq('clothing_id', id)
+    if (error) throw error
+  } else {
+    const { data: { user } } = await supabase.auth.getUser()
+    const { error } = await supabase.from('user_favorites').insert({ user_id: user.id, clothing_id: id })
+    if (error) throw error
+  }
 }
 
 // ─── STORAGE — ZDJĘCIA ───────────────────────────────────────────────────────
@@ -179,6 +191,34 @@ export async function updateOutfit(id, updates) {
 export async function deleteOutfit(id) {
   const { error } = await supabase.from('outfits').delete().eq('id', id)
   if (error) throw error
+}
+
+// ─── USER PREFERENCES ────────────────────────────────────────────────────────
+
+export async function hasCompletedTour(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('user_preferences')
+      .select('tour_completed')
+      .eq('user_id', userId)
+      .single()
+    if (error) return false
+    return data?.tour_completed ?? false
+  } catch {
+    return false
+  }
+}
+
+export async function markTourCompleted(userId) {
+  try {
+    await supabase.from('user_preferences').upsert({
+      user_id: userId,
+      tour_completed: true,
+      tour_completed_at: new Date().toISOString()
+    })
+  } catch {
+    // ignore
+  }
 }
 
 // ─── STORAGE — ZDJĘCIA ───────────────────────────────────────────────────────

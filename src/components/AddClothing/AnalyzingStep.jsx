@@ -25,7 +25,8 @@ export default function AnalyzingStep() {
 
   return (
     <div className="analyzing-step">
-      <div className="analyzing-pulse" />
+      <img src="/assets/Rozdzka.png" className="pixel-icon" width="56" height="56"
+        style={{ borderRadius: '12px', animation: 'pulse 1s ease-in-out infinite' }} />
       <p className={`analyzing-text ${visible ? 'analyzing-text-visible' : 'analyzing-text-hidden'}`}>
         {MESSAGES[msgIndex]}
       </p>

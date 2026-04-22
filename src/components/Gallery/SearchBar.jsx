@@ -1,6 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
+import { logSearch } from '../../services/devLogger'
 
-export default function SearchBar({ query, onChange, onClose, clothes }) {
+export default function SearchBar({ query, onChange, onClose, clothes, resultsCount = 0 }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (query.length > 2) logSearch(query, resultsCount)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [query, resultsCount])
   // Dynamiczne chipy z unikatowych wartości w bazie
   const chips = useMemo(() => {
     const colors = [...new Set(clothes.flatMap(c => c.colors ?? []))].slice(0, 8)
@@ -18,9 +25,8 @@ export default function SearchBar({ query, onChange, onClose, clothes }) {
     <div className="search-screen">
       <div className="search-top-bar">
         <div className="search-input-wrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" strokeWidth="2.5" strokeLinecap="round">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
+          <img src="/assets/Lupa.png" className="pixel-icon" width="22" height="22"
+            style={{ opacity: 0.4, borderRadius: '4px', marginRight: '8px' }} />
           <input
             className="search-input"
             type="search"

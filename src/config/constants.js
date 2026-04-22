@@ -7,7 +7,7 @@ export const DEV_EMAIL = 'mikolo321@gmail.com'
 // Mapowanie email → imię właściciela (do powitania i domyślnego filtra)
 export const OWNER_EMAILS = {
   'mikolo321@gmail.com': 'Mikołaj',
-  // Dodaj email Emilki gdy będzie znany: 'emilka@example.com': 'Emilka',
+  'aemilka@gmail.com': 'Emilka',
 }
 
 export function getOwnerFromEmail(email) {
@@ -35,26 +35,36 @@ export const STATUS_COLORS = {
 
 // Kategorie ubrań
 export const CATEGORIES = [
-  'T-shirt',
-  'Koszula',
-  'Bluza',
-  'Sweter',
-  'Kurtka',
-  'Płaszcz',
-  'Spodnie',
-  'Jeansy',
-  'Szorty',
-  'Spódnica',
-  'Sukienka',
-  'Bielizna',
-  'Skarpetki',
-  'Buty',
-  'Akcesoria',
-  'Inne',
+  'koszula',
+  'bluza',
+  'sweter',
+  't-shirt',
+  'top',
+  'spodnie',
+  'szorty',
+  'sukienka',
+  'spódnica',
+  'kurtka',
+  'płaszcz',
+  'marynarka',
+  'garnitur',
+  'dres',
+  'bielizna',
+  'skarpety',
+  'buty',
+  'akcesoria',
+  'inne',
 ]
 
 // Warstwy ubrania
-export const CLOTHING_LAYERS = ['spód', 'środek', 'wierzch', 'dół', 'całość', 'dodatek']
+export const CLOTHING_LAYERS = [
+  'bielizna',
+  'pierwsza warstwa',
+  'środkowa warstwa',
+  'zewnętrzna warstwa',
+  'dodatek',
+  'inne',
+]
 
 // Sezony
 export const SEASONS = ['wiosna', 'lato', 'jesień', 'zima']
@@ -84,6 +94,11 @@ export const IRONING_OPTIONS = [
   'wysoka temperatura',
   'nie prasować',
   'prasować przez ściereczkę',
+]
+
+// Grupy kolorystyczne prania
+export const WASH_COLOR_GROUPS = [
+  'białe', 'jasne', 'kolorowe', 'ciemne', 'delikatne',
 ]
 
 // Filtry w galerii — klucze owner_ muszą zawierać dokładną nazwę właściciela

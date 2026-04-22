@@ -1,4 +1,5 @@
 import { OWNERS, CATEGORIES, SEASONS, WASHING_MODES, DRYING_OPTIONS, IRONING_OPTIONS, CLOTHING_LAYERS } from '../../config/constants'
+import WizardHint from '../UI/WizardHint'
 
 // Tagi z możliwością usunięcia (pill + ×)
 function PillTagInput({ label, value = [], onChange, placeholder }) {
@@ -105,6 +106,13 @@ export default function FormStep({ formData, onChange, onSave, saving, error }) 
       <SectionHeader title="Podstawowe" />
 
       <div className="form-group">
+        <label>Nazwa</label>
+        <input type="text" value={formData.name ?? ''}
+          onChange={e => field('name')(e.target.value)}
+          placeholder="np. jeansowa z futerkiem, biały z nadrukiem..." />
+      </div>
+
+      <div className="form-group">
         <label>Opis</label>
         <textarea value={formData.ai_description ?? ''} rows={3}
           onChange={e => field('ai_description')(e.target.value)}
@@ -114,8 +122,36 @@ export default function FormStep({ formData, onChange, onSave, saving, error }) 
       <SingleSelect label="Kategoria" options={CATEGORIES}
         value={formData.category ?? ''} onChange={field('category')} />
 
-      <SingleSelect label="Warstwa *" options={CLOTHING_LAYERS}
-        value={formData.clothing_layer ?? ''} onChange={field('clothing_layer')} />
+      <div className="form-group">
+        <label>Marka</label>
+        <div className="brand-input-wrapper">
+          <input
+            type="text"
+            placeholder="np. Zara, H&M, Nike..."
+            value={formData.brand || ''}
+            onChange={e => field('brand')(e.target.value)}
+          />
+          {formData.brand && (
+            <button type="button" className="brand-clear-btn" onClick={() => field('brand')('')}>×</button>
+          )}
+        </div>
+        {formData.brand && (
+          <div className="brand-detected-badge">
+            <img src="/assets/label-tag.png" className="pixel-icon" width="14" height="14" style={{marginRight: '4px', verticalAlign: 'middle'}} alt="" />
+            Wykryto przez AI
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ flex: 1 }}>
+          <SingleSelect label="Warstwa *" options={CLOTHING_LAYERS}
+            value={formData.clothing_layer ?? ''} onChange={field('clothing_layer')} />
+        </div>
+        <div style={{ paddingTop: '20px', flexShrink: 0 }}>
+          <WizardHint hintKey="clothing-layer" />
+        </div>
+      </div>
 
       <PillTagInput label="Kolory" value={formData.colors ?? []}
         onChange={field('colors')} placeholder="Wpisz kolor i Enter" />

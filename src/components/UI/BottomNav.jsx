@@ -1,43 +1,46 @@
 export default function BottomNav({ activeScreen, onGallery, onOutfits, onLaundry, onAddClick, onChat }) {
+  function navImg(src, active) {
+    return (
+      <img
+        src={src}
+        width="32"
+        height="32"
+        className="pixel-icon nav-tab-img"
+        style={{
+          borderRadius: '6px',
+          filter: active
+            ? 'drop-shadow(0 0 6px rgba(0,0,0,0.15))'
+            : 'grayscale(60%) opacity(0.55)',
+        }}
+      />
+    )
+  }
+
   return (
     <nav className="bottom-nav">
-      <button className={`nav-tab ${activeScreen === 'gallery' ? 'active' : ''}`} onClick={onGallery}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        <span className="nav-label">Wardrobe</span>
+      <button data-tab="gallery" className={`nav-tab ${activeScreen === 'gallery' ? 'active' : ''}`} onClick={onGallery}>
+        {navImg('/assets/Wieszak.png', activeScreen === 'gallery')}
+        <span className="nav-label">Szafa</span>
       </button>
 
-      <button className={`nav-tab ${activeScreen === 'outfits' ? 'active' : ''}`} onClick={onOutfits}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="3" width="8" height="18" rx="2"/>
-          <rect x="14" y="3" width="8" height="18" rx="2"/>
-        </svg>
+      <button data-tab="outfits" className={`nav-tab ${activeScreen === 'outfits' ? 'active' : ''}`} onClick={onOutfits}>
+        {navImg('/assets/outfit.png', activeScreen === 'outfits')}
         <span className="nav-label">Outfity</span>
       </button>
 
-      <button className="nav-add" onClick={onAddClick} aria-label="Dodaj ubranie">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+      <button data-tab="add" className="nav-add" onClick={onAddClick} aria-label="Dodaj ubranie">
+        <img src="/assets/plus.png" className="pixel-icon" width="40" height="40"
+          style={{ borderRadius: '10px' }} alt="Dodaj" />
+        <span className="nav-label">Dodaj</span>
       </button>
 
-      <button className={`nav-tab ${activeScreen === 'laundry' ? 'active' : ''}`} onClick={onLaundry}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="2" width="20" height="20" rx="3"/>
-          <circle cx="12" cy="13" r="5"/>
-          <circle cx="12" cy="13" r="2.5"/>
-          <line x1="7" y1="6" x2="7.01" y2="6" strokeWidth="2.5"/>
-          <line x1="10" y1="6" x2="13" y2="6"/>
-        </svg>
+      <button data-tab="laundry" className={`nav-tab ${activeScreen === 'laundry' ? 'active' : ''}`} onClick={onLaundry}>
+        {navImg('/assets/Pralka.png', activeScreen === 'laundry')}
         <span className="nav-label">Pranie</span>
       </button>
 
-      <button className={`nav-tab ${activeScreen === 'chat' ? 'active' : ''}`} onClick={onChat}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-        </svg>
+      <button data-tab="chat" className={`nav-tab ${activeScreen === 'chat' ? 'active' : ''}`} onClick={onChat}>
+        {navImg('/assets/Rozdzka.png', activeScreen === 'chat')}
         <span className="nav-label">Chat</span>
       </button>
     </nav>

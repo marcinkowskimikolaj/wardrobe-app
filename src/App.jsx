@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { useClothes } from './hooks/useClothes'
 import { useOutfits } from './hooks/useOutfits'
 import { getOwnerFromEmail } from './config/constants'
+import { logNavigation } from './services/devLogger'
+import { hasCompletedTour } from './services/supabase'
 import Login from './components/Auth/Login'
 import Gallery from './components/Gallery/Gallery'
 import AddClothing from './components/AddClothing/AddClothing'
@@ -12,6 +14,7 @@ import LaundryScreen from './components/Laundry/LaundryScreen'
 import ChatScreen from './components/Chat/ChatScreen'
 import BottomNav from './components/UI/BottomNav'
 import LoadingSpinner from './components/UI/LoadingSpinner'
+import WizardTour from './components/UI/WizardTour'
 
 const SCREENS = { GALLERY: 'gallery', ADD: 'add', DETAIL: 'detail', OUTFITS: 'outfits', LAUNDRY: 'laundry', CHAT: 'chat' }
 const TAB_INDEX = { [SCREENS.GALLERY]: 0, [SCREENS.OUTFITS]: 1, [SCREENS.LAUNDRY]: 2, [SCREENS.CHAT]: 3 }
@@ -19,13 +22,31 @@ const TAB_INDEX = { [SCREENS.GALLERY]: 0, [SCREENS.OUTFITS]: 1, [SCREENS.LAUNDRY
 export default function App() {
   const { user, loading: authLoading } = useAuth()
   const ownerName = user ? (getOwnerFromEmail(user.email) ?? null) : null
-  const { clothes, loading: clothesLoading, error, reload, updateLocalItem, removeLocalItem } = useClothes()
+  const { clothes, loading: clothesLoading, error, reload, updateLocalItem, removeLocalItem, toggleFavorite } = useClothes()
   const { outfits, loading: outfitsLoading, error: outfitsError, addLocal: addOutfitLocal, updateLocal: updateOutfitLocal, removeLocal: removeOutfitLocal } = useOutfits()
   const [screen, setScreen] = useState(SCREENS.GALLERY)
   const [selectedItem, setSelectedItem] = useState(null)
   const [exitingDetail, setExitingDetail] = useState(false)
   const [slideDir, setSlideDir] = useState('right')
   const [exitingTab, setExitingTab] = useState(null)
+  const [devMode, setDevMode] = useState(localStorage.getItem('dev_mode') === 'true')
+  const [showTour, setShowTour] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      hasCompletedTour(user.id).then(completed => {
+        if (!completed) setShowTour(true)
+      })
+    }
+  }, [user])
+
+  const handleRestartTour = () => setShowTour(true)
+
+  const toggleDevMode = () => {
+    const newVal = !devMode
+    setDevMode(newVal)
+    localStorage.setItem('dev_mode', String(newVal))
+  }
 
   if (authLoading) return <LoadingSpinner text="Ładowanie..." />
   if (!user) return <Login />
@@ -57,6 +78,7 @@ export default function App() {
       setExitingTab(screen)
       setTimeout(() => setExitingTab(null), 260)
     }
+    logNavigation(screen, newScreen)
     setScreen(newScreen)
   }
 
@@ -76,6 +98,11 @@ export default function App() {
         error={error}
         onItemClick={openDetail}
         ownerName={ownerName}
+        user={user}
+        devMode={devMode}
+        toggleDevMode={toggleDevMode}
+        onReload={reload}
+        onRestartTour={handleRestartTour}
       />
 
       {/* Detail — overlay z animacją wejścia i wyjścia */}
@@ -89,8 +116,11 @@ export default function App() {
             onClose={backToGallery}
             onUpdated={(id, updates) => { updateLocalItem(id, updates); setSelectedItem(prev => ({ ...prev, ...updates })) }}
             onDeleted={(id) => { removeLocalItem(id); backToGallery() }}
+            onToggleFavorite={(id) => { toggleFavorite(id); setSelectedItem(prev => prev?.id === id ? { ...prev, is_favorite: !(prev.is_favorite ?? false) } : prev) }}
             onOutfitAdded={(outfit) => addOutfitLocal(outfit)}
             onItemClick={openDetail}
+            devMode={devMode}
+            userEmail={user.email}
           />
         </div>
       )}
@@ -130,8 +160,17 @@ export default function App() {
 
       {(screen === SCREENS.CHAT || exitingTab === SCREENS.CHAT) && (
         <div className={`screen-overlay ${exitingTab === SCREENS.CHAT ? 'screen-exit-right' : slideClass}`}>
-          <ChatScreen clothes={clothes} onItemClick={openDetail} />
+          <ChatScreen clothes={clothes} onItemClick={openDetail} user={user} />
         </div>
+      )}
+
+      {showTour && (
+        <WizardTour
+          user={user}
+          ownerName={ownerName}
+          onComplete={() => setShowTour(false)}
+          onNavigate={(screen) => navigateTo(screen)}
+        />
       )}
 
       {showBottomNav && (

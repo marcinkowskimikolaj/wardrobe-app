@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { addOutfit } from '../../services/supabase'
+import { logOutfitSaved } from '../../services/devLogger'
 
 export default function OutfitPicker({ currentItem, clothes, onSaved, onClose }) {
   const [selected, setSelected] = useState([])
@@ -23,6 +24,7 @@ export default function OutfitPicker({ currentItem, clothes, onSaved, onClose })
         clothing_ids: [currentItem.id, ...selected],
         notes: null,
       })
+      logOutfitSaved(outfit, 'manual')
       onSaved(outfit)
       onClose()
     } catch (err) {

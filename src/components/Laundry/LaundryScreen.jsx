@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { updateClothing } from '../../services/supabase'
 import { STATUSES, STATUS_COLORS } from '../../config/constants'
+import WizardHint from '../UI/WizardHint'
+
+const STATUS_ICONS = {
+  'czyste':   '/assets/status-clean.png',
+  'używane':  '/assets/status-used.png',
+  'w praniu': '/assets/status-washing.png',
+}
 import { getDirtyClothes, groupByOwner, recommendLaundryLoads, daysSince } from '../../services/laundry'
 
 function StatusActionBtn({ status, itemId, onUpdated }) {
@@ -24,15 +31,11 @@ function StatusActionBtn({ status, itemId, onUpdated }) {
   return (
     <button className="laundry-action-btn" onClick={handleTap} disabled={loading}>
       {status === STATUSES.USED ? (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <circle cx="12" cy="12" r="4"/>
-          <path d="M12 2a7 7 0 0 1 5 2"/>
-        </svg>
+        <img src="/assets/washing-machine-action.png" className="pixel-icon" width="30" height="30"
+          style={{ borderRadius: '7px' }} alt="Do prania" />
       ) : (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
+        <img src="/assets/checkmark.png" className="pixel-icon" width="30" height="30"
+          style={{ borderRadius: '7px' }} alt="Wyprane" />
       )}
     </button>
   )
@@ -51,13 +54,15 @@ function ClothingRow({ item, onUpdated }) {
           : <div className="laundry-thumb-placeholder">🧥</div>}
       </div>
       <div className="laundry-item-info">
-        <span className="laundry-item-category">{item.category ?? 'Ubranie'}</span>
+        <span className="laundry-item-category">{(n => n ? n.charAt(0).toUpperCase() + n.slice(1) : null)(item.name) || item.category || 'Ubranie'}</span>
         {subtitle && <span className="laundry-item-sub">{subtitle}</span>}
         {days !== null && <span className="laundry-item-washed">Prane {days === 0 ? 'dzisiaj' : `${days} dni temu`}</span>}
       </div>
-      <span className="laundry-status-pill" style={{ '--pill': statusColor }}>
-        {item.status}
-      </span>
+      {STATUS_ICONS[item.status]
+        ? <img src={STATUS_ICONS[item.status]} className="pixel-icon" width="24" height="24"
+            style={{ borderRadius: '5px', flexShrink: 0 }} alt={item.status} />
+        : <span className="laundry-status-pill" style={{ '--pill': statusColor }}>{item.status}</span>
+      }
       <StatusActionBtn status={item.status} itemId={item.id} onUpdated={onUpdated} />
     </div>
   )
@@ -93,7 +98,8 @@ function LoadCard({ load, onMarkClean }) {
     return (
       <div className="load-card">
         <div className="wash-success">
-          <span className="wash-success-icon">✓</span>
+          <img src="/assets/checkmark.png" className="pixel-icon wash-success-icon" width="28" height="28"
+            style={{ borderRadius: '6px' }} alt="Wyprane" />
           <span className="wash-success-text">Wyprane!</span>
         </div>
       </div>
@@ -102,11 +108,16 @@ function LoadCard({ load, onMarkClean }) {
 
   const tempLabel = load.temp ? `${load.temp}°C` : 'bez temp.'
   const modeLabel = load.mode ?? 'dowolny tryb'
+  const colorLabel = load.colorGroup ?? null
 
   return (
     <div className="load-card">
       <div className="load-card-header">
-        <span className="load-card-title">🌡️ {tempLabel} · {modeLabel}</span>
+        <span className="load-card-title" style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <img src="/assets/temperature.png" className="pixel-icon" width="18" height="18"
+            style={{ borderRadius: '4px', marginRight: '6px' }} alt="Temperatura" />
+          {tempLabel} · {modeLabel}{colorLabel ? ` · ${colorLabel}` : ''}
+        </span>
         <span className="load-card-count">{load.items.length} {load.items.length === 1 ? 'rzecz' : load.items.length < 5 ? 'rzeczy' : 'rzeczy'}</span>
       </div>
       <div className="load-thumbs">
@@ -125,7 +136,13 @@ function LoadCard({ load, onMarkClean }) {
         <p className="load-save-error">Błąd zapisu, spróbuj ponownie</p>
       )}
       <button className="btn-primary load-clean-btn" onClick={handleMarkClean} disabled={loading}>
-        {loading ? 'Zapisuję...' : 'Oznacz jako wyprane ✓'}
+        {loading ? 'Zapisuję...' : (
+          <>
+            <img src="/assets/checkmark.png" className="pixel-icon" width="26" height="26"
+              style={{ borderRadius: '6px', marginRight: '8px' }} alt="" />
+            Oznacz jako wyprane
+          </>
+        )}
       </button>
     </div>
   )
@@ -152,9 +169,11 @@ export default function LaundryScreen({ clothes, onUpdated }) {
       <div className="laundry-screen">
         <div className="laundry-header">
           <h1 className="laundry-title">Pranie</h1>
+          <img src="/assets/Pralka.png" className="pixel-icon" width="36" height="36" style={{ borderRadius: '8px' }} />
         </div>
         <div className="laundry-empty">
-          <span className="laundry-empty-icon">🧺</span>
+          <img src="/assets/Pralka.png" className="pixel-icon" width="88" height="88"
+            style={{ borderRadius: '14px', opacity: 0.6, animation: 'iconSway 2s ease-in-out infinite' }} />
           <p className="laundry-empty-title">Wszystko czyste! 🎉</p>
           <p className="laundry-empty-sub">Zmień status ubrania na „używane" żeby pojawiło się tutaj</p>
         </div>
@@ -166,6 +185,7 @@ export default function LaundryScreen({ clothes, onUpdated }) {
     <div className="laundry-screen">
       <div className="laundry-header">
         <h1 className="laundry-title">Pranie</h1>
+        <img src="/assets/Pralka.png" width="36" height="36" style={{ borderRadius: '8px', imageRendering: 'pixelated' }} />
         <span className="laundry-header-count">{dirty.length} {dirty.length === 1 ? 'rzecz' : 'rzeczy'}</span>
       </div>
 
@@ -187,7 +207,10 @@ export default function LaundryScreen({ clothes, onUpdated }) {
       {/* Sekcja 2 — Rekomendowane wsady */}
       {loads.length > 0 && (
         <div className="laundry-section">
-          <p className="laundry-section-label">Rekomendowane wsady</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <p className="laundry-section-label" style={{ margin: 0 }}>Rekomendowane wsady</p>
+            <WizardHint hintKey="laundry-loads" />
+          </div>
           <div className="laundry-loads-list">
             {loads.map((load, i) => (
               <LoadCard key={i} load={load} onMarkClean={handleMarkClean} />

@@ -3,14 +3,17 @@ import { analyzeClothing } from '../../services/groq'
 import { GROQ_MODEL } from '../../services/groq'
 import { addClothing, uploadPhoto } from '../../services/supabase'
 import { DEV_EMAIL, getOwnerFromEmail } from '../../config/constants'
+import { logClothingAdded, logAIAnalysis, logError } from '../../services/devLogger'
 import PhotoStep from './PhotoStep'
 import AnalyzingStep from './AnalyzingStep'
 import FormStep from './FormStep'
+import WizardHint from '../UI/WizardHint'
 
 const STEPS = { PHOTO: 'photo', ANALYZING: 'analyzing', FORM: 'form' }
 
 const EMPTY_FORM = {
   owner: '',
+  name: '',
   category: '',
   colors: [],
   material: '',
@@ -31,6 +34,14 @@ const EMPTY_FORM = {
   formality: null,
   dominant_color: null,
   secondary_colors: [],
+  subcategory: '',
+  occasion: [],
+  texture: '',
+  warmth_level: null,
+  formality_score: null,
+  clothing_layer: '',
+  brand: '',
+  wash_color_group: null,
 }
 
 // embedding_ready = true jeśli AI wypełniło kluczowe pola do wyszukiwania
@@ -53,11 +64,14 @@ export default function AddClothing({ onClose, onSaved, user }) {
 
   async function handleAnalyze() {
     setStep(STEPS.ANALYZING)
+    const start = Date.now()
     try {
       const aiResult = await analyzeClothing(clothingFile, labelFile)
+      logAIAnalysis(Date.now() - start, true, aiResult, !!labelFile)
       setFormData(prev => ({
         ...prev,
         owner: prev.owner || ownerName,
+        name: aiResult.name ?? '',
         category: aiResult.category ?? '',
         colors: Array.isArray(aiResult.colors) ? aiResult.colors : [],
         material: aiResult.material ?? '',
@@ -77,9 +91,19 @@ export default function AddClothing({ onClose, onSaved, user }) {
         formality: aiResult.formality ?? null,
         dominant_color: aiResult.dominant_color ?? null,
         secondary_colors: Array.isArray(aiResult.secondary_colors) ? aiResult.secondary_colors : [],
+        subcategory: aiResult.subcategory || '',
+        occasion: Array.isArray(aiResult.occasion) ? aiResult.occasion : [],
+        texture: aiResult.texture || '',
+        warmth_level: aiResult.warmth_level ?? null,
+        formality_score: aiResult.formality_score ?? null,
+        clothing_layer: aiResult.clothing_layer || '',
+        brand: aiResult.brand || '',
+        wash_color_group: aiResult.wash_color_group ?? null,
       }))
       setStep(STEPS.FORM)
     } catch (err) {
+      logAIAnalysis(Date.now() - start, false, null)
+      logError(err, 'ai_analysis')
       console.error('Błąd analizy AI:', err)
       setFormData(EMPTY_FORM)
       setStep(STEPS.FORM)
@@ -103,6 +127,7 @@ export default function AddClothing({ onClose, onSaved, user }) {
       if (clothingFile) photoUrl = await uploadPhoto(clothingFile, 'clothing')
       if (labelFile) labelPhotoUrl = await uploadPhoto(labelFile, 'labels')
 
+      const saveStart = Date.now()
       const newItem = await addClothing({
         ...formData,
         photo_url: photoUrl,
@@ -116,11 +141,11 @@ export default function AddClothing({ onClose, onSaved, user }) {
         notes: formData.notes || null,
         ai_description: formData.ai_description || null,
         prompt_tags: formData.prompt_tags?.length ? formData.prompt_tags : null,
-        // Metadane AI — hardcoded confidence, model z stałej
         ai_model: manualMode ? null : GROQ_MODEL,
         ai_confidence: manualMode ? null : 0.85,
         embedding_ready: calcEmbeddingReady(formData),
       })
+      logClothingAdded(newItem, Date.now() - saveStart)
 
       onSaved(newItem)
       onClose()
@@ -154,7 +179,14 @@ export default function AddClothing({ onClose, onSaved, user }) {
           />
         )}
 
-        {step === STEPS.ANALYZING && <AnalyzingStep />}
+        {step === STEPS.ANALYZING && (
+          <div style={{ position: 'relative' }}>
+            <AnalyzingStep />
+            <div style={{ position: 'absolute', top: '8px', right: '8px' }}>
+              <WizardHint hintKey="add-ai" />
+            </div>
+          </div>
+        )}
 
         {step === STEPS.FORM && (
           <FormStep

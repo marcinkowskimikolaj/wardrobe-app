@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchClothes } from '../services/supabase'
+import { fetchClothes, toggleFavorite as toggleFavoriteApi } from '../services/supabase'
 
 export function useClothes() {
   const [clothes, setClothes] = useState([])
@@ -21,7 +21,6 @@ export function useClothes() {
 
   useEffect(() => { load() }, [load])
 
-  // Optymistyczna aktualizacja statusu bez przeładowania całej listy
   const updateLocalItem = useCallback((id, updates) => {
     setClothes(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item))
   }, [])
@@ -30,5 +29,19 @@ export function useClothes() {
     setClothes(prev => prev.filter(item => item.id !== id))
   }, [])
 
-  return { clothes, loading, error, reload: load, updateLocalItem, removeLocalItem }
+  const toggleFavorite = useCallback(async (id) => {
+    const item = clothes.find(c => c.id === id)
+    if (!item) return
+    const current = item.is_favorite ?? false
+    // Optymistyczna aktualizacja
+    setClothes(prev => prev.map(c => c.id === id ? { ...c, is_favorite: !current } : c))
+    try {
+      await toggleFavoriteApi(id, current)
+    } catch {
+      // Cofnij przy błędzie
+      setClothes(prev => prev.map(c => c.id === id ? { ...c, is_favorite: current } : c))
+    }
+  }, [clothes])
+
+  return { clothes, loading, error, reload: load, updateLocalItem, removeLocalItem, toggleFavorite }
 }

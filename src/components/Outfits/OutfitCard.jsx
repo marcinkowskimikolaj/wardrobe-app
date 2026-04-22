@@ -12,6 +12,8 @@ export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onIt
     .map(id => clothes.find(c => c.id === id))
     .filter(Boolean)
 
+  const isReadyToWear = items.length > 0 && items.every(item => item.status === 'czyste')
+
   async function saveName() {
     setEditingName(false)
     if (name === outfit.name) return
@@ -50,7 +52,8 @@ export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onIt
         ) : (
           <button className="outfit-name-btn" onClick={() => setEditingName(true)}>
             {name}
-            <span className="outfit-edit-icon">✎</span>
+            <img src="/assets/edit-pencil.png" className="pixel-icon outfit-edit-icon" width="18" height="18"
+              style={{ borderRadius: '4px', opacity: 0.7 }} alt="Edytuj" />
           </button>
         )}
         {saveError && <span className="outfit-save-error">Błąd zapisu</span>}
@@ -77,6 +80,14 @@ export default function OutfitCard({ outfit, clothes, onUpdated, onDeleted, onIt
           ))
         )}
       </div>
+
+      {isReadyToWear && (
+        <div className="outfit-ready-badge">
+          <img src="/assets/checkmark-fresh.png" width="16" height="16"
+            className="pixel-icon" alt="" style={{ imageRendering: 'pixelated' }} />
+          Gotowe do ubrania
+        </div>
+      )}
     </div>
   )
 }

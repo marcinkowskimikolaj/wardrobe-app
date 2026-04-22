@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react'
 import { CATEGORIES, STATUSES, SEASONS } from '../../config/constants'
+import { logFilterUsed } from '../../services/devLogger'
+
 
 const STATUS_OPTIONS = [
   { value: STATUSES.CLEAN,   label: 'Czyste' },
@@ -9,8 +11,9 @@ const STATUS_OPTIONS = [
 
 const SEASON_OPTIONS = SEASONS.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))
 
-export default function FilterSheet({ activeFilters, onApply, onClose }) {
+export default function FilterSheet({ activeFilters, onApply, onClose, clothes = [] }) {
   const [local, setLocal] = useState({ ...activeFilters })
+  const availableBrands = [...new Set(clothes.map(c => c.brand).filter(Boolean))].sort()
   const [exiting, setExiting] = useState(false)
   const startY = useRef(null)
   const [dragY, setDragY] = useState(0)
@@ -28,8 +31,14 @@ export default function FilterSheet({ activeFilters, onApply, onClose }) {
   }
 
   function isActive(key, value) { return (local[key] ?? []).includes(value) }
-  function handleApply() { onApply(local); close() }
-  function handleReset() { setLocal({ categories: [], statuses: [], seasons: [] }) }
+  function handleApply() { logFilterUsed(local); onApply(local); close() }
+  function handleReset() { setLocal({ categories: [], statuses: [], seasons: [], brands: [] }) }
+  function toggleBrand(brand) {
+    setLocal(prev => {
+      const arr = prev.brands ?? []
+      return { ...prev, brands: arr.includes(brand) ? arr.filter(v => v !== brand) : [...arr, brand] }
+    })
+  }
 
   function handleTouchStart(e) { startY.current = e.touches[0].clientY }
   function handleTouchMove(e) {
@@ -91,14 +100,35 @@ export default function FilterSheet({ activeFilters, onApply, onClose }) {
         <div className="sheet-section">
           <p className="sheet-section-label">Sezon</p>
           <div className="sheet-chips">
-            {SEASON_OPTIONS.map(s => (
-              <button key={s.value} className={`sheet-chip ${isActive('seasons', s.value) ? 'active' : ''}`}
-                onClick={() => toggle('seasons', s.value)}>
-                {s.label}
-              </button>
-            ))}
+            {SEASON_OPTIONS.map(s => {
+              const SEASON_ICONS = { lato: '/assets/Slonce.png', summer: '/assets/Slonce.png', wiosna: '/assets/spring.png', spring: '/assets/spring.png', zima: '/assets/snieg.png', winter: '/assets/snieg.png', jesień: '/assets/season-autumn.png', autumn: '/assets/season-autumn.png', fall: '/assets/season-autumn.png' }
+              return (
+                <button key={s.value} className={`sheet-chip ${isActive('seasons', s.value) ? 'active' : ''}`}
+                  onClick={() => toggle('seasons', s.value)}>
+                  {SEASON_ICONS[s.value] && <img src={SEASON_ICONS[s.value]} width="20" height="20" style={{ borderRadius: '3px', marginRight: '6px', verticalAlign: 'middle', imageRendering: 'pixelated' }} />}
+                  {s.label}
+                </button>
+              )
+            })}
           </div>
         </div>
+
+        {availableBrands.length > 0 && (
+          <div className="sheet-section">
+            <p className="sheet-section-label">Marka</p>
+            <div className="sheet-chips">
+              {availableBrands.map(brand => (
+                <button
+                  key={brand}
+                  className={`sheet-chip ${local.brands?.includes(brand) ? 'active' : ''}`}
+                  onClick={() => toggleBrand(brand)}
+                >
+                  {brand}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button className="btn-primary sheet-apply" onClick={handleApply}>
           Pokaż wyniki

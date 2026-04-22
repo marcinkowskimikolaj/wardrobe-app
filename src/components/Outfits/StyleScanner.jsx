@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { analyzeOutfit } from '../../services/groq'
 import { matchItemToWardrobe } from '../../services/styleScanner'
 import { addOutfit } from '../../services/supabase'
+import { logScannerUsed, logOutfitSaved, logError } from '../../services/devLogger'
 import AnalyzingStep from '../AddClothing/AnalyzingStep'
 import AddClothing from '../AddClothing/AddClothing'
 
@@ -26,7 +27,8 @@ function ScannerPhotoStep({ file, onFileChange, onAnalyze }) {
           </>
         ) : (
           <div className="scanner-photo-empty">
-            <span className="scanner-photo-icon">📸</span>
+            <img src="/assets/scan-photo.png" className="pixel-icon scanner-photo-icon" width="48" height="48"
+              style={{ borderRadius: '10px', opacity: 0.6 }} alt="Zdjęcie" />
             <p>Dotknij aby dodać zdjęcie</p>
             <span className="scanner-photo-hint">lub wybierz z galerii</span>
           </div>
@@ -62,15 +64,11 @@ function MatchCard({ item, selected, onToggle }) {
   )
 }
 
-function ScannerResults({ scanResult, clothes, selected, onToggle, onSave, onAddClick }) {
-  const itemsWithMatches = scanResult.detected_items.map(di => ({
-    detected: di,
-    matches: matchItemToWardrobe(di, clothes),
-  }))
-
-  const matchedCount = itemsWithMatches.filter(({ matches }) =>
-    matches.some(m => selected.has(m.id))
+function ScannerResults({ scanResult, itemsWithMatches, selected, skippedItems, onToggle, onToggleSkip, onSave, onAddClick }) {
+  const matchedCount = itemsWithMatches.filter(({ matches }, idx) =>
+    !skippedItems.has(idx) && matches.some(m => selected.has(m.id))
   ).length
+  const totalCount = itemsWithMatches.length
 
   return (
     <div className="scanner-results">
@@ -81,49 +79,68 @@ function ScannerResults({ scanResult, clothes, selected, onToggle, onSave, onAdd
         </p>
       </div>
 
-      {itemsWithMatches.map(({ detected, matches }, idx) => (
-        <div key={idx} className="scanner-item-section" style={{ '--index': idx }}>
-          <p className="scanner-item-header">
-            👕 {detected.item_type}
-            {detected.formality ? ` — ${detected.formality}` : ''}
-            {detected.pattern && detected.pattern !== 'jednolity' ? `, ${detected.pattern}` : ''}
-          </p>
-
-          {matches.length > 0 ? (
-            <>
-              <p className="scanner-match-hint">Masz to w szafie:</p>
-              <div className="scanner-match-grid">
-                {matches.map(m => (
-                  <MatchCard
-                    key={m.id}
-                    item={m}
-                    selected={selected.has(m.id)}
-                    onToggle={() => onToggle(m.id)}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="scanner-no-match">
-              <span>Nie masz tego w szafie</span>
-              <button className="btn-ghost small" onClick={() => onAddClick(detected.item_type)}>
-                + Dodaj {detected.item_type}
+      {itemsWithMatches.map(({ detected, matches }, idx) => {
+        const skipped = skippedItems.has(idx)
+        return (
+          <div
+            key={idx}
+            className="scanner-item-section"
+            style={{ '--index': idx, opacity: skipped ? 0.4 : 1 }}
+          >
+            <div className="scanner-item-header">
+              <span className="scanner-item-title" style={{ textDecoration: skipped ? 'line-through' : 'none' }}>
+                👕 {detected.item_type}
+                {detected.formality ? ` — ${detected.formality}` : ''}
+                {detected.pattern && detected.pattern !== 'jednolity' ? `, ${detected.pattern}` : ''}
+              </span>
+              <button
+                className={`scanner-skip-btn${skipped ? ' skipped' : ''}`}
+                onClick={() => onToggleSkip(idx)}
+              >
+                {skipped ? '↩ Przywróć' : 'Pomiń ✕'}
               </button>
             </div>
-          )}
-        </div>
-      ))}
 
-      <div className="scanner-footer">
-        <p className="scanner-summary">
-          Dopasowano {matchedCount}/{scanResult.detected_items.length} elementów stylizacji
-        </p>
+            {!skipped && (
+              matches.length > 0 ? (
+                <>
+                  <p className="scanner-match-hint">Masz to w szafie:</p>
+                  <div className="scanner-match-grid">
+                    {matches.map(m => (
+                      <MatchCard
+                        key={m.id}
+                        item={m}
+                        selected={selected.has(m.id)}
+                        onToggle={() => onToggle(m.id)}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="scanner-no-match">
+                  <span>Nie masz tego w szafie</span>
+                  <button className="btn-ghost small" onClick={() => onAddClick(detected.item_type)}>
+                    + Dodaj {detected.item_type}
+                  </button>
+                </div>
+              )
+            )}
+          </div>
+        )
+      })}
+
+      <div className="scanner-bottom-bar">
+        <div className="scanner-summary">
+          Dopasowano {matchedCount}/{totalCount} elementów
+        </div>
         <button
-          className="btn-primary"
+          className="btn-primary scanner-save-btn"
           onClick={onSave}
-          disabled={selected.size < 2}
+          disabled={selected.size < 1}
         >
-          💾 Zapisz jako outfit ({selected.size} szt.)
+          <img src="/assets/save.png" className="pixel-icon" width="18" height="18"
+            style={{ borderRadius: '4px', marginRight: '8px' }} alt="" />
+          Zapisz jako outfit ({selected.size} szt.)
         </button>
       </div>
     </div>
@@ -135,20 +152,37 @@ export default function StyleScanner({ clothes, onSaved, onClose, onAddClick, us
   const [photoFile, setPhotoFile] = useState(null)
   const [scanResult, setScanResult] = useState(null)
   const [selected, setSelected] = useState(new Set())
+  const [skippedItems, setSkippedItems] = useState(new Set())
   const [saving, setSaving] = useState(false)
   const [showNameModal, setShowNameModal] = useState(false)
   const [outfitName, setOutfitName] = useState('')
   const [error, setError] = useState(null)
   const [showAddClothing, setShowAddClothing] = useState(false)
 
+  const itemsWithMatches = scanResult
+    ? scanResult.detected_items.map(di => ({
+        detected: di,
+        matches: matchItemToWardrobe(di, clothes),
+      }))
+    : []
+
   async function handleAnalyze() {
     setStep(STEPS.ANALYZING)
     setError(null)
+    const start = Date.now()
     try {
       const result = await analyzeOutfit(photoFile)
+      const matchedCount = result.detected_items.reduce((acc, di) => {
+        return acc + (matchItemToWardrobe(di, clothes).length > 0 ? 1 : 0)
+      }, 0)
+      logScannerUsed(Date.now() - start, true, result.detected_items.length, matchedCount, 0, false)
       setScanResult(result)
+      setSelected(new Set())
+      setSkippedItems(new Set())
       setStep(STEPS.RESULTS)
     } catch (err) {
+      logScannerUsed(Date.now() - start, false, 0, 0, 0, false)
+      logError(err, 'scanner_analyze')
       console.error('Błąd skanowania:', err)
       setError('Nie udało się przeanalizować zdjęcia. Spróbuj ponownie.')
       setStep(STEPS.PHOTO)
@@ -163,23 +197,51 @@ export default function StyleScanner({ clothes, onSaved, onClose, onAddClick, us
     })
   }
 
+  function toggleSkip(idx) {
+    setSkippedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(idx)) {
+        next.delete(idx)
+      } else {
+        next.add(idx)
+        const matchIds = itemsWithMatches[idx]?.matches.map(m => m.id) ?? []
+        setSelected(prev2 => {
+          const s = new Set(prev2)
+          matchIds.forEach(id => s.delete(id))
+          return s
+        })
+      }
+      return next
+    })
+  }
+
   async function handleConfirmSave() {
-    if (selected.size < 2) return
+    if (selected.size < 1) return
     setSaving(true)
     try {
       const selectedClothes = clothes.filter(c => selected.has(c.id))
       const owner = selectedClothes[0]?.owner ?? null
+      const skippedNote = skippedItems.size > 0
+        ? `pominięto ${skippedItems.size} elementów`
+        : 'kompletna stylizacja'
       const outfit = await addOutfit({
         name: outfitName.trim() || 'Stylizacja ze skanera',
         clothing_ids: [...selected],
         owner,
         notes: scanResult
-          ? `${scanResult.overall_style} · ${scanResult.occasion}`
+          ? `${scanResult.overall_style} · ${scanResult.occasion} · ${skippedNote}`
           : null,
       })
+      const totalDetected = itemsWithMatches.length
+      const matchedCount = itemsWithMatches.filter(({ matches }, idx) =>
+        !skippedItems.has(idx) && matches.some(m => selected.has(m.id))
+      ).length
+      const matchRate = totalDetected > 0 ? Math.round((matchedCount / totalDetected) * 100) : 0
+      logOutfitSaved(outfit, 'scanner', matchRate)
       onSaved(outfit)
       onClose()
     } catch (err) {
+      logError(err, 'scanner_save_outfit')
       console.error('Błąd zapisu outfitu:', err)
     } finally {
       setSaving(false)
@@ -208,9 +270,11 @@ export default function StyleScanner({ clothes, onSaved, onClose, onAddClick, us
         {step === STEPS.RESULTS && scanResult && (
           <ScannerResults
             scanResult={scanResult}
-            clothes={clothes}
+            itemsWithMatches={itemsWithMatches}
             selected={selected}
+            skippedItems={skippedItems}
             onToggle={toggleItem}
+            onToggleSkip={toggleSkip}
             onSave={() => setShowNameModal(true)}
             onAddClick={() => setShowAddClothing(true)}
           />
